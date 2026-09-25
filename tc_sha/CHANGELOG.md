@@ -11,13 +11,14 @@ Initial release.
 - `Sha1Digest`, `Sha224Digest`, `Sha256Digest`, `Sha384Digest`,
   `Sha512Digest` and `Sha512tDigest` (FIPS 180-4), ported from Bouncy Castle.
   Each implements `tc_digest::TryDigest` with `core::convert::Infallible` as
-  its error type, and so `tc_digest::Digest`, and implements `Clone`. All but
+  its error type, and so `tc_digest::Digest`, and implements `Clone` and
+  `Display`, which writes the FIPS name, such as `SHA-256`. All but
   `Sha512tDigest` have `const fn new` and `Default`.
 - `Sha512tDigest::new(t)` accepts any multiple of 8 from 8 to 504 other than
   384 and derives the initial hash value for `t` as FIPS 180-4 specifies. It
   panics for any other `t`; unlike Bouncy Castle, it also rejects zero, which
-  FIPS 180-4 excludes. It needs no allocator: its `algorithm_name`, such as
-  `"SHA-512/256"`, lives in a fixed buffer.
+  FIPS 180-4 excludes. It needs no allocator: `Display` writes its name,
+  such as `SHA-512/256`, from `t`.
 - `do_final` writes the digest to the start of the output buffer and resets
   the digest; a buffer shorter than `digest_size` panics before any state
   changes.

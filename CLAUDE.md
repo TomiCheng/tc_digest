@@ -31,6 +31,12 @@ x86 targets. `tc_digest` carries no algorithm knowledge: output lengths, block
 sizes, output-buffer checks and timing guarantees belong to the digest crates
 built on it, never to `tc_digest`.
 
+Digests name themselves through `Display`, not through the traits: `TryDigest`
+has no name method and does not require `Display`, just as `BlockCipher` and
+`StreamCipher` do not. Generic code that needs a name adds a `Display` bound.
+Each `Display` implementation writes a fixed name without inspecting the
+digest state, and its `fmt` documents its timing like any other helper.
+
 Every digest in `tc_sha` and MD4 and MD5 in `tc_md` are constant time; MD2 is
 variable time because it indexes its S-box with message-derived bytes.
 `tests/documentation.rs` in each digest crate requires every `*Digest` type,

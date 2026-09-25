@@ -34,6 +34,7 @@ fn missing_timing_docs(source: &str) -> (usize, Vec<String>) {
             || line.starts_with("fn push(")
             || line.starts_with("fn format_name(")
             || line.starts_with("fn generate_iv(")
+            || line.starts_with("fn fmt(")
         {
             checked += 1;
             let docs = docs.to_ascii_lowercase();
@@ -63,9 +64,12 @@ pub(crate) fn helper() {}
 fn push() {}
 pub struct Parameters {}
 fn try_update() {}
+/// Constant time with respect to the message.
+fn fmt() {}
+fn fmt(&self) {}
 ";
     let (checked, missing) = missing_timing_docs(fixture);
-    assert_eq!(checked, 7);
+    assert_eq!(checked, 9);
     assert_eq!(
         missing,
         [
@@ -73,6 +77,7 @@ fn try_update() {}
             "fn compress() {}",
             "fn process_block() {}",
             "fn push() {}",
+            "fn fmt(&self) {}",
         ]
     );
 }

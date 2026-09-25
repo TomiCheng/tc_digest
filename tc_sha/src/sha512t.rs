@@ -6,7 +6,7 @@
 //! SHA-512. The IV is the SHA-512 digest of the ASCII name `"SHA-512/t"`,
 //! computed from the SHA-512 IV with every word XORed with `0xa5a5...a5`.
 
-use core::convert::Infallible;
+use core::{convert::Infallible, fmt};
 
 use tc_digest::TryDigest;
 
@@ -39,10 +39,6 @@ pub struct Sha512tDigest {
     iv: [u64; 8],
     /// The output length in bytes, `t / 8`.
     digest_len: usize,
-    /// The ASCII algorithm name, such as `"SHA-512/256"`, in the first
-    /// `name_len` bytes.
-    name: [u8; NAME_CAPACITY],
-    name_len: usize,
 }
 
 impl Sha512tDigest {
@@ -77,14 +73,12 @@ impl Sha512tDigest {
             buf: MdBuffer::new(),
             iv,
             digest_len: bit_length / 8,
-            name,
-            name_len,
         }
     }
 }
 
-/// Formats the ASCII name `"SHA-512/<t>"` for `t` in `8..=504`, returning the
-/// buffer and the name's length. Constant time.
+/// Formats the ASCII name `"SHA-512/<t>"` for `t` in `8..=504`, from which the
+/// IV is derived, returning the buffer and the name's length. Constant time.
 fn format_name(bit_length: usize) -> ([u8; NAME_CAPACITY], usize) {
     let mut digits = [0u8; 3];
     let mut n = bit_length;
@@ -121,12 +115,17 @@ fn generate_iv(name: &[u8]) -> [u64; 8] {
     h
 }
 
+impl fmt::Display for Sha512tDigest {
+    /// Writes `SHA-512/` and `t`, such as `SHA-512/256`, without inspecting the
+    /// digest state. Constant time with respect to the message; output timing
+    /// depends on the formatter.
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "SHA-512/{}", self.digest_len * 8)
+    }
+}
+
 impl TryDigest for Sha512tDigest {
     type Error = Infallible;
-
-    fn algorithm_name(&self) -> &str {
-        core::str::from_utf8(&self.name[..self.name_len]).expect("the name is ASCII")
-    }
 
     /// Returns `t / 8`, the output length chosen at construction.
     fn digest_size(&self) -> usize {
@@ -200,7 +199,7 @@ mod tests {
     #[test]
     fn sha512_224_vectors() {
         let mut d = Sha512tDigest::new(224);
-        assert_eq!(d.algorithm_name(), "SHA-512/224");
+        assert_eq!(format!("{d}"), "SHA-512/224");
         assert_eq!(d.digest_size(), 28);
         assert_eq!(
             hex(&mut d, b""),
@@ -215,7 +214,7 @@ mod tests {
     #[test]
     fn sha512_256_vectors() {
         let mut d = Sha512tDigest::new(256);
-        assert_eq!(d.algorithm_name(), "SHA-512/256");
+        assert_eq!(format!("{d}"), "SHA-512/256");
         assert_eq!(d.digest_size(), 32);
         assert_eq!(
             hex(&mut d, b""),
@@ -260,9 +259,13 @@ mod tests {
 
     #[test]
     fn names_cover_one_to_three_digit_lengths() {
-        assert_eq!(Sha512tDigest::new(8).algorithm_name(), "SHA-512/8");
-        assert_eq!(Sha512tDigest::new(80).algorithm_name(), "SHA-512/80");
-        assert_eq!(Sha512tDigest::new(504).algorithm_name(), "SHA-512/504");
+        for (t, name) in [(8, "SHA-512/8"), (80, "SHA-512/80"), (504, "SHA-512/504")] {
+            // The IV derivation hashes the formatted name, and Display writes
+            // the same text.
+            let (buffer, len) = format_name(t);
+            assert_eq!(&buffer[..len], name.as_bytes());
+            assert_eq!(format!("{}", Sha512tDigest::new(t)), name);
+        }
         assert_eq!(Sha512tDigest::new(504).digest_size(), 63);
     }
 

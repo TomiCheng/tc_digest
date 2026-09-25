@@ -31,7 +31,7 @@ Requires Rust 1.85 or later (edition 2024).
 Each digest implements `TryDigest` with `core::convert::Infallible` as its
 error type, and so `Digest` as well. It has `const fn new` and `Default`, and
 implements `Clone`, so a digest can be forked partway through a message.
-`algorithm_name` returns `"MD2"`, `"MD4"` or `"MD5"`.
+`Display` writes the algorithm name, `MD2`, `MD4` or `MD5`.
 
 `do_final` writes the 16-byte digest to the start of the output buffer, leaves
 any longer tail untouched, returns 16, and resets the digest. It panics if the

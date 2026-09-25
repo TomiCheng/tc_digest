@@ -3,7 +3,7 @@
 //! MD4 is cryptographically broken; it is kept only for legacy
 //! interoperability.
 
-use core::convert::Infallible;
+use core::{convert::Infallible, fmt};
 
 use tc_digest::TryDigest;
 
@@ -166,12 +166,16 @@ impl Md4Digest {
     }
 }
 
+impl fmt::Display for Md4Digest {
+    /// Writes `MD4` without inspecting the digest state. Constant time with
+    /// respect to the message; output timing depends on the formatter.
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("MD4")
+    }
+}
+
 impl TryDigest for Md4Digest {
     type Error = Infallible;
-
-    fn algorithm_name(&self) -> &str {
-        "MD4"
-    }
 
     fn digest_size(&self) -> usize {
         DIGEST_LENGTH
@@ -269,7 +273,7 @@ mod tests {
     #[test]
     fn accessors() {
         let d = Md4Digest::new();
-        assert_eq!(d.algorithm_name(), "MD4");
+        assert_eq!(format!("{d}"), "MD4");
         assert_eq!(d.digest_size(), 16);
         assert_eq!(d.byte_length(), 64);
     }

@@ -3,7 +3,7 @@
 
 mod common;
 
-use common::{counting_message, hex_digest};
+use common::{NamedDigest, counting_message, hex_digest};
 use tc_digest::Digest;
 use tc_sha::{Sha1Digest, Sha224Digest, Sha256Digest, Sha384Digest, Sha512Digest, Sha512tDigest};
 
@@ -14,13 +14,12 @@ const BOUNDARY_LENGTHS: [usize; 6] = [55, 56, 64, 111, 112, 128];
 
 /// Hashes the messages `0, 1, 2, ...` of each boundary length and compares
 /// them with digests computed by OpenSSL.
-fn check_boundaries(digest: &mut dyn Digest, expected: [&str; 6]) {
+fn check_boundaries(digest: &mut dyn NamedDigest, expected: [&str; 6]) {
     for (len, expected) in BOUNDARY_LENGTHS.into_iter().zip(expected) {
         assert_eq!(
             hex_digest(digest, &counting_message(len)),
             expected,
-            "{} of a {len}-byte message",
-            digest.algorithm_name()
+            "{digest} of a {len}-byte message"
         );
     }
 }
@@ -168,7 +167,7 @@ fn sha512_t_matches_the_896_bit_example() {
 /// One million repetitions of `'a'`, fed in uneven pieces.
 #[test]
 fn every_digest_matches_the_million_a_vector() {
-    let cases: [(&mut dyn Digest, &str); 7] = [
+    let cases: [(&mut dyn NamedDigest, &str); 7] = [
         (
             &mut Sha1Digest::new(),
             "34aa973cd4c4daa4f61eeb2bdbad27316534016f",
@@ -201,16 +200,11 @@ fn every_digest_matches_the_million_a_vector() {
         ),
     ];
     for (digest, expected) in cases {
-        assert_eq!(
-            million_a_hex(digest),
-            expected,
-            "{}",
-            digest.algorithm_name()
-        );
+        assert_eq!(million_a_hex(digest), expected, "{digest}");
     }
 }
 
-fn million_a_hex(digest: &mut dyn Digest) -> String {
+fn million_a_hex<D: Digest + ?Sized>(digest: &mut D) -> String {
     let chunk = [b'a'; 1000];
     // 999 * 1001 + 1 = 1_000_000, in pieces that never align with a block.
     for _ in 0..999 {

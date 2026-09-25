@@ -68,10 +68,6 @@ mod tests {
     impl TryDigest for CounterXof {
         type Error = Infallible;
 
-        fn algorithm_name(&self) -> &str {
-            "COUNTER-XOF"
-        }
-
         fn digest_size(&self) -> usize {
             1
         }

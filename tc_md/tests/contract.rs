@@ -7,12 +7,12 @@ mod common;
 
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
-use common::{counting_message, hex_digest};
+use common::{NamedDigest, counting_message, hex_digest};
 use tc_digest::Digest;
 use tc_md::{Md2Digest, Md4Digest, Md5Digest};
 
 /// Runs every contract check on digests built by `make`.
-fn check_contract<D: Digest + Clone>(make: impl Fn() -> D) {
+fn check_contract<D: NamedDigest + Clone>(make: impl Fn() -> D) {
     do_final_writes_digest_size_bytes_and_resets(&make);
     a_short_output_panics_without_changing_state(&make);
     clones_continue_independently(&make);
@@ -35,18 +35,14 @@ fn do_final_writes_digest_size_bytes_and_resets<D: Digest>(make: &impl Fn() -> D
     assert_eq!(hex_digest(&mut digest, b""), empty);
 }
 
-fn a_short_output_panics_without_changing_state<D: Digest>(make: &impl Fn() -> D) {
+fn a_short_output_panics_without_changing_state<D: NamedDigest>(make: &impl Fn() -> D) {
     let expected = hex_digest(&mut make(), b"abc");
     let mut digest = make();
     digest.update(b"abc");
 
     let mut short = vec![0u8; digest.digest_size() - 1];
     let result = catch_unwind(AssertUnwindSafe(|| digest.do_final(&mut short)));
-    assert!(
-        result.is_err(),
-        "{} accepted a short buffer",
-        digest.algorithm_name()
-    );
+    assert!(result.is_err(), "{digest} accepted a short buffer");
     assert_eq!(hex_digest(&mut digest, b""), expected);
 }
 
@@ -63,7 +59,7 @@ fn clones_continue_independently<D: Digest + Clone>(make: &impl Fn() -> D) {
 
 /// For every message up to two blocks and one byte, splits around the block
 /// edges and byte-by-byte updates give the digest of the whole message.
-fn splitting_the_message_never_changes_the_digest<D: Digest>(make: &impl Fn() -> D) {
+fn splitting_the_message_never_changes_the_digest<D: NamedDigest>(make: &impl Fn() -> D) {
     let block = make().byte_length();
     for len in 0..=2 * block + 1 {
         let message = counting_message(len);
@@ -85,8 +81,7 @@ fn splitting_the_message_never_changes_the_digest<D: Digest>(make: &impl Fn() ->
             assert_eq!(
                 hex_digest(&mut digest, &message[split..]),
                 whole,
-                "{} of {len} bytes split at {split}",
-                digest.algorithm_name()
+                "{digest} of {len} bytes split at {split}"
             );
         }
 
@@ -116,11 +111,11 @@ fn md5_keeps_the_digest_contract() {
 #[test]
 fn accessors_report_each_algorithm() {
     for (digest, name, size, block) in [
-        (&Md2Digest::new() as &dyn Digest, "MD2", 16, 16),
+        (&Md2Digest::new() as &dyn NamedDigest, "MD2", 16, 16),
         (&Md4Digest::new(), "MD4", 16, 64),
         (&Md5Digest::new(), "MD5", 16, 64),
     ] {
-        assert_eq!(digest.algorithm_name(), name);
+        assert_eq!(digest.to_string(), name);
         assert_eq!(digest.digest_size(), size);
         assert_eq!(digest.byte_length(), block);
     }

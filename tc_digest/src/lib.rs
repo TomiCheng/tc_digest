@@ -11,13 +11,18 @@
 //! receives them automatically through blanket implementations, so it never
 //! implements them by hand.
 //!
+//! The traits carry no algorithm name. Implementations write it through
+//! [`Display`](core::fmt::Display), as the example below does, and generic code
+//! that needs the name adds a `Display` bound.
+//!
 //! # Example
 //!
 //! A toy digest that sums its input bytes. It implements [`TryDigest`] with an
-//! infallible error type and so gains the [`Digest`] methods:
+//! infallible error type and so gains the [`Digest`] methods, and it names
+//! itself through `Display`:
 //!
 //! ```
-//! use core::convert::Infallible;
+//! use core::{convert::Infallible, fmt};
 //! use tc_digest::{Digest, TryDigest};
 //!
 //! #[derive(Default)]
@@ -25,12 +30,14 @@
 //!     sum: u8,
 //! }
 //!
+//! impl fmt::Display for Sum8 {
+//!     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//!         f.write_str("SUM-8")
+//!     }
+//! }
+//!
 //! impl TryDigest for Sum8 {
 //!     type Error = Infallible;
-//!
-//!     fn algorithm_name(&self) -> &str {
-//!         "SUM-8"
-//!     }
 //!
 //!     fn digest_size(&self) -> usize {
 //!         1
@@ -59,16 +66,24 @@
 //!     }
 //! }
 //!
-//! // Generic code asks only for the capability it uses.
-//! fn hash_parts(digest: &mut dyn Digest, parts: &[&[u8]], output: &mut [u8]) -> usize {
+//! // Generic code asks only for the capabilities it uses.
+//! fn hash_parts<D: Digest + fmt::Display>(
+//!     digest: &mut D,
+//!     parts: &[&[u8]],
+//!     output: &mut [u8],
+//! ) -> String {
 //!     for part in parts {
 //!         digest.update(part);
 //!     }
-//!     digest.do_final(output)
+//!     let written = digest.do_final(output);
+//!     format!("{digest} wrote {written} byte")
 //! }
 //!
 //! let mut output = [0u8; 1];
-//! assert_eq!(hash_parts(&mut Sum8::default(), &[&[1, 2], &[3]], &mut output), 1);
+//! assert_eq!(
+//!     hash_parts(&mut Sum8::default(), &[&[1, 2], &[3]], &mut output),
+//!     "SUM-8 wrote 1 byte"
+//! );
 //! assert_eq!(output, [6]);
 //! ```
 

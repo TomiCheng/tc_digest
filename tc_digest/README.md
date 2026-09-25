@@ -34,9 +34,11 @@ error type is `core::convert::Infallible`, blanket implementations supply
 All four traits are dyn-compatible, so `&mut dyn Digest` works wherever the
 digest is chosen at run time.
 
-Besides processing, a digest reports `algorithm_name`, such as `"SHA-256"`,
-`digest_size`, the number of bytes `do_final` writes, and `byte_length`, its
-internal block length, which HMAC pads its key to.
+Besides processing, a digest reports `digest_size`, the number of bytes
+`do_final` writes, and `byte_length`, its internal block length, which HMAC
+pads its key to. The traits carry no algorithm name: digest crates implement
+`Display` to write it, such as `SHA-256`, and generic code that needs the name
+adds a `Display` bound.
 
 ## Usage
 
@@ -80,7 +82,8 @@ no authentication on its own; use a MAC such as HMAC to protect messages.
 ## Validation
 
 The crate documentation carries an executable example that implements
-`TryDigest` and uses it through `&mut dyn Digest`. Unit tests check that
+`TryDigest` and `Display` and hashes through a function generic over both.
+Unit tests check that
 infallible implementations receive `Digest` and `Xof`, that XOF output
 continues across calls and restarts after `output_final`, and that both
 infallible traits work as trait objects. Missing public documentation is

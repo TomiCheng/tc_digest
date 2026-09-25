@@ -1,6 +1,6 @@
 //! MD2 message digest (RFC 1319), ported from Bouncy Castle's `MD2Digest`.
 
-use core::convert::Infallible;
+use core::{convert::Infallible, fmt};
 
 use tc_digest::TryDigest;
 
@@ -90,12 +90,16 @@ impl Md2Digest {
     }
 }
 
+impl fmt::Display for Md2Digest {
+    /// Writes `MD2` without inspecting the digest state. Constant time with
+    /// respect to the message; output timing depends on the formatter.
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("MD2")
+    }
+}
+
 impl TryDigest for Md2Digest {
     type Error = Infallible;
-
-    fn algorithm_name(&self) -> &str {
-        "MD2"
-    }
 
     fn digest_size(&self) -> usize {
         DIGEST_LENGTH
@@ -240,7 +244,7 @@ mod tests {
     #[test]
     fn accessors() {
         let d = Md2Digest::new();
-        assert_eq!(d.algorithm_name(), "MD2");
+        assert_eq!(format!("{d}"), "MD2");
         assert_eq!(d.digest_size(), 16);
         assert_eq!(d.byte_length(), 16);
     }

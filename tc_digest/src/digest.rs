@@ -9,14 +9,15 @@ use core::convert::Infallible;
 /// everything absorbed since the last reset and resets the digest for the
 /// next message.
 ///
+/// The trait carries no algorithm name; implementations write it through
+/// [`Display`](core::fmt::Display), and generic code that needs the name adds
+/// that bound.
+///
 /// The trait makes no constant-time promise. Whether a digest's running time
 /// depends on the message contents is documented by each implementation.
 pub trait TryDigest {
     /// The failure type returned by digest operations.
     type Error: core::error::Error;
-
-    /// Returns the algorithm's display name, such as `"SHA-256"`.
-    fn algorithm_name(&self) -> &str;
 
     /// Returns the digest length in bytes, which is the number of bytes
     /// [`try_do_final`](TryDigest::try_do_final) writes.
@@ -108,10 +109,6 @@ mod tests {
 
     impl TryDigest for SumDigest {
         type Error = Infallible;
-
-        fn algorithm_name(&self) -> &str {
-            "SUM-8"
-        }
 
         fn digest_size(&self) -> usize {
             1

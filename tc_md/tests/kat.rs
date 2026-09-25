@@ -4,8 +4,7 @@
 
 mod common;
 
-use common::{counting_message, hex_digest};
-use tc_digest::Digest;
+use common::{NamedDigest, counting_message, hex_digest};
 use tc_md::{Md2Digest, Md4Digest, Md5Digest};
 
 /// Message lengths on the padding boundaries of 64- and 128-byte blocks: the
@@ -15,13 +14,12 @@ const BOUNDARY_LENGTHS: [usize; 6] = [55, 56, 64, 111, 112, 128];
 
 /// Hashes the messages `0, 1, 2, ...` of each boundary length and compares
 /// them with digests computed by OpenSSL.
-fn check_boundaries(digest: &mut dyn Digest, expected: [&str; 6]) {
+fn check_boundaries(digest: &mut dyn NamedDigest, expected: [&str; 6]) {
     for (len, expected) in BOUNDARY_LENGTHS.into_iter().zip(expected) {
         assert_eq!(
             hex_digest(digest, &counting_message(len)),
             expected,
-            "{} of a {len}-byte message",
-            digest.algorithm_name()
+            "{digest} of a {len}-byte message"
         );
     }
 }

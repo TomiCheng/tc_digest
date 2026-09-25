@@ -3,10 +3,18 @@
 // Each test file uses a different subset.
 #![allow(dead_code)]
 
+use std::fmt;
+
 use tc_digest::Digest;
 
+/// Everything the tests need from a digest: the infallible API and the name
+/// its `Display` implementation writes.
+pub trait NamedDigest: Digest + fmt::Display {}
+
+impl<D: Digest + fmt::Display + ?Sized> NamedDigest for D {}
+
 /// Absorbs `message`, finalizes, and returns the digest as lowercase hex.
-pub fn hex_digest(digest: &mut dyn Digest, message: &[u8]) -> String {
+pub fn hex_digest<D: Digest + ?Sized>(digest: &mut D, message: &[u8]) -> String {
     digest.update(message);
     let mut output = [0u8; 64];
     let written = digest.do_final(&mut output);

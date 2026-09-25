@@ -1,7 +1,7 @@
 //! SHA-256 message digest (FIPS 180-4), ported from Bouncy Castle's
 //! `Sha256Digest`.
 
-use core::convert::Infallible;
+use core::{convert::Infallible, fmt};
 
 use tc_digest::TryDigest;
 
@@ -55,12 +55,16 @@ impl Sha256Digest {
     }
 }
 
+impl fmt::Display for Sha256Digest {
+    /// Writes `SHA-256` without inspecting the digest state. Constant time with
+    /// respect to the message; output timing depends on the formatter.
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("SHA-256")
+    }
+}
+
 impl TryDigest for Sha256Digest {
     type Error = Infallible;
-
-    fn algorithm_name(&self) -> &str {
-        "SHA-256"
-    }
 
     fn digest_size(&self) -> usize {
         DIGEST_LENGTH
@@ -158,7 +162,7 @@ mod tests {
     #[test]
     fn accessors() {
         let d = Sha256Digest::new();
-        assert_eq!(d.algorithm_name(), "SHA-256");
+        assert_eq!(format!("{d}"), "SHA-256");
         assert_eq!(d.digest_size(), 32);
         assert_eq!(d.byte_length(), 64);
     }

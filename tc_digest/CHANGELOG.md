@@ -11,9 +11,11 @@ Initial release.
 - `TryDigest`, a streaming message digest whose `try_update`,
   `try_update_byte`, `try_do_final` and `try_reset` return a `Result` with the
   implementation's associated error type, and which reports its
-  `algorithm_name`, `digest_size` and internal block length, `byte_length`.
-  `try_update_byte` has a default implementation over `try_update`. A
-  successful `try_do_final` resets the digest.
+  `digest_size` and internal block length, `byte_length`. The trait carries
+  no algorithm name and does not require `Display`; implementations name
+  themselves through `Display`. `try_update_byte` has a default
+  implementation over `try_update`. A successful `try_do_final` resets the
+  digest.
 - `TryXof`, an extendable-output function built on `TryDigest`: `try_output`
   starts or continues squeezing, and `try_output_final` squeezes and resets.
 - `Digest` and `Xof`, the infallible forms with `update`, `update_byte`,

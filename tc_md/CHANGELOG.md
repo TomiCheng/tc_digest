@@ -11,7 +11,8 @@ Initial release.
 - `Md2Digest` (RFC 1319), `Md4Digest` (RFC 1320) and `Md5Digest` (RFC 1321),
   ported from Bouncy Castle. Each implements `tc_digest::TryDigest` with
   `core::convert::Infallible` as its error type, and so `tc_digest::Digest`,
-  and has `const fn new`, `Default` and `Clone`.
+  and has `const fn new`, `Default` and `Clone`. `Display` writes the
+  algorithm name.
 - `do_final` writes the 16-byte digest to the start of the output buffer and
   resets the digest; a buffer shorter than 16 bytes panics before any state
   changes.

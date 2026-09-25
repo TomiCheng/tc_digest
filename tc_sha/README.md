@@ -34,8 +34,8 @@ Requires Rust 1.85 or later (edition 2024).
 Each digest implements `TryDigest` with `core::convert::Infallible` as its
 error type, and so `Digest` as well, and implements `Clone`, so a digest can be
 forked partway through a message. Every digest except `Sha512tDigest` has
-`const fn new` and `Default`. `algorithm_name` returns the FIPS name, such as
-`"SHA-256"` or `"SHA-512/256"`.
+`const fn new` and `Default`. `Display` writes the FIPS name, such as
+`SHA-256` or `SHA-512/256`.
 
 `Sha512tDigest::new(t)` accepts any multiple of 8 from 8 to 504 other than
 384, which is SHA-384's length, and derives the initial hash value for `t` as

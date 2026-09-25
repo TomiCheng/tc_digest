@@ -4,7 +4,7 @@
 //! SHA-384 is SHA-512 with a different IV and its output truncated to 48 bytes;
 //! it reuses `sha512_core::compress` unchanged.
 
-use core::convert::Infallible;
+use core::{convert::Infallible, fmt};
 
 use tc_digest::TryDigest;
 
@@ -58,12 +58,16 @@ impl Sha384Digest {
     }
 }
 
+impl fmt::Display for Sha384Digest {
+    /// Writes `SHA-384` without inspecting the digest state. Constant time with
+    /// respect to the message; output timing depends on the formatter.
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("SHA-384")
+    }
+}
+
 impl TryDigest for Sha384Digest {
     type Error = Infallible;
-
-    fn algorithm_name(&self) -> &str {
-        "SHA-384"
-    }
 
     fn digest_size(&self) -> usize {
         DIGEST_LENGTH
@@ -155,7 +159,7 @@ mod tests {
     #[test]
     fn accessors() {
         let d = Sha384Digest::new();
-        assert_eq!(d.algorithm_name(), "SHA-384");
+        assert_eq!(format!("{d}"), "SHA-384");
         assert_eq!(d.digest_size(), 48);
         assert_eq!(d.byte_length(), 128);
     }

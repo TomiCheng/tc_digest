@@ -4,7 +4,7 @@
 //! SHA-224 is SHA-256 with a different IV and its output truncated to 28 bytes;
 //! it reuses `sha256_core::compress` unchanged.
 
-use core::convert::Infallible;
+use core::{convert::Infallible, fmt};
 
 use tc_digest::TryDigest;
 
@@ -58,12 +58,16 @@ impl Sha224Digest {
     }
 }
 
+impl fmt::Display for Sha224Digest {
+    /// Writes `SHA-224` without inspecting the digest state. Constant time with
+    /// respect to the message; output timing depends on the formatter.
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("SHA-224")
+    }
+}
+
 impl TryDigest for Sha224Digest {
     type Error = Infallible;
-
-    fn algorithm_name(&self) -> &str {
-        "SHA-224"
-    }
 
     fn digest_size(&self) -> usize {
         DIGEST_LENGTH
@@ -149,7 +153,7 @@ mod tests {
     #[test]
     fn accessors() {
         let d = Sha224Digest::new();
-        assert_eq!(d.algorithm_name(), "SHA-224");
+        assert_eq!(format!("{d}"), "SHA-224");
         assert_eq!(d.digest_size(), 28);
         assert_eq!(d.byte_length(), 64);
     }
