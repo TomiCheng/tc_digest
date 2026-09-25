@@ -1,0 +1,16 @@
+[package]
+name = "tc_md"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "MD2, MD4 and MD5 message digests for legacy interoperability."
+readme = "README.md"
+documentation = "https://docs.rs/tc_md"
+keywords = ["md5", "md4", "md2", "hash", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[dependencies]
+tc_digest = { version = "0.1.0", path = "../tc_digest" }
