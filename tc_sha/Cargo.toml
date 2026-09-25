@@ -1,0 +1,16 @@
+[package]
+name = "tc_sha"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SHA-1 and SHA-2 (SHA-224, SHA-256, SHA-384, SHA-512, SHA-512/t) message digests."
+readme = "README.md"
+documentation = "https://docs.rs/tc_sha"
+keywords = ["sha2", "sha256", "sha512", "hash", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[dependencies]
+tc_digest = { version = "0.1.0", path = "../tc_digest" }

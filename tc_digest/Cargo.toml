@@ -1,0 +1,13 @@
+[package]
+name = "tc_digest"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Shared streaming message-digest and extendable-output function (XOF) traits, fallible and infallible."
+readme = "README.md"
+documentation = "https://docs.rs/tc_digest"
+keywords = ["digest", "hash", "xof", "cryptography", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
