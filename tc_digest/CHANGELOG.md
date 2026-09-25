@@ -2,7 +2,7 @@
 
 All notable changes to `tc_digest` are documented in this file.
 
-## 0.1.0 - Unreleased
+## 0.1.0 - 2026-09-25
 
 Initial release.
 
