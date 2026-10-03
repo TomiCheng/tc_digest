@@ -1,8 +1,8 @@
 name: CI
 
+# CI runs on pull requests only. Pushes are not tested, including merges and
+# direct commits to develop; the develop-to-main pull request tests those.
 on:
-  push:
-    branches: [develop, main]
   pull_request:
     branches: [develop, main]
   workflow_dispatch:
