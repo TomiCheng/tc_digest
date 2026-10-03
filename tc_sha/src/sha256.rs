@@ -4,6 +4,7 @@
 use core::{convert::Infallible, fmt};
 
 use tc_digest::TryDigest;
+use tc_zeroize::Zeroize;
 
 use crate::md_buffer::MdBuffer;
 use crate::sha256_core::compress;
@@ -30,6 +31,11 @@ const IV: [u32; 8] = [
 /// bitwise operations, and the running time depends only on the message
 /// length.
 ///
+/// Dropping or resetting the digest, which `do_final` also does, wipes its
+/// chaining state and buffered input with volatile writes. Copies the
+/// compression leaves in registers or on the stack, such as the message
+/// schedule, and copies a move leaves behind are not wiped.
+///
 /// `do_final` panics if the output buffer is shorter than 32 bytes.
 #[derive(Clone)]
 pub struct Sha256Digest {
@@ -52,6 +58,14 @@ impl Sha256Digest {
             h: IV,
             buf: MdBuffer::new(),
         }
+    }
+}
+
+impl Drop for Sha256Digest {
+    /// Wipes the chaining registers; the block buffer wipes itself.
+    /// Constant time.
+    fn drop(&mut self) {
+        self.h.zeroize();
     }
 }
 

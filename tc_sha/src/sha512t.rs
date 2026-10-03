@@ -9,6 +9,7 @@
 use core::{convert::Infallible, fmt};
 
 use tc_digest::TryDigest;
+use tc_zeroize::Zeroize;
 
 use crate::md_buffer::MdBuffer;
 use crate::sha512_core::{IV as SHA512_IV, compress};
@@ -27,6 +28,11 @@ const NAME_CAPACITY: usize = NAME_PREFIX.len() + 3;
 /// Constant time: the compression uses only additions, rotations, shifts and
 /// bitwise operations, and the running time depends only on the message
 /// length and `t`.
+///
+/// Dropping or resetting the digest, which `do_final` also does, wipes its
+/// chaining state and buffered input with volatile writes. Copies the
+/// compression leaves in registers or on the stack, such as the message
+/// schedule, and copies a move leaves behind are not wiped.
 ///
 /// `do_final` panics if the output buffer is shorter than `t / 8` bytes.
 #[derive(Clone)]
@@ -113,6 +119,14 @@ fn generate_iv(name: &[u8]) -> [u64; 8] {
     let bit_len = (buf.byte_count() as u128) << 3;
     buf.finish(&bit_len.to_be_bytes(), |b| compress(&mut h, b));
     h
+}
+
+impl Drop for Sha512tDigest {
+    /// Wipes the chaining registers; the block buffer wipes itself. The IV is
+    /// derived from the public `t` and left in place. Constant time.
+    fn drop(&mut self) {
+        self.h.zeroize();
+    }
 }
 
 impl fmt::Display for Sha512tDigest {

@@ -3,6 +3,7 @@
 use core::{convert::Infallible, fmt};
 
 use tc_digest::TryDigest;
+use tc_zeroize::Zeroize;
 
 const DIGEST_LENGTH: usize = 16;
 const BYTE_LENGTH: usize = 16;
@@ -15,6 +16,11 @@ const BYTE_LENGTH: usize = 16;
 /// Variable time: the compression indexes the S-box with message-derived
 /// bytes, which can leak the message through cache timing. Hash only public
 /// data with it.
+///
+/// Dropping or resetting the digest, which `do_final` also does, wipes its
+/// state, buffered block and checksum with volatile writes. Copies the
+/// compression leaves in registers or on the stack, such as the block copies
+/// it works on, and copies a move leaves behind are not wiped.
 ///
 /// `do_final` panics if the output buffer is shorter than 16 bytes.
 #[derive(Clone)]
@@ -87,6 +93,17 @@ impl Md2Digest {
             }
             t = t.wrapping_add(j);
         }
+    }
+}
+
+impl Drop for Md2Digest {
+    /// Wipes the state, the buffered block and its fill level, and the
+    /// checksum. Constant time.
+    fn drop(&mut self) {
+        self.x.zeroize();
+        self.m.zeroize();
+        self.m_off.zeroize();
+        self.c.zeroize();
     }
 }
 

@@ -8,14 +8,22 @@ version = "0.1.0"
 
 [[package]]
 name = "tc_md"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "tc_digest",
+ "tc_zeroize",
 ]
 
 [[package]]
 name = "tc_sha"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "tc_digest",
+ "tc_zeroize",
 ]
+
+[[package]]
+name = "tc_zeroize"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f496e361f9d75bd7cd0408dc585e9f334182314595ce27ea4852ab9c3858af1"

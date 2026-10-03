@@ -6,6 +6,7 @@
 use core::{convert::Infallible, fmt};
 
 use tc_digest::TryDigest;
+use tc_zeroize::Zeroize;
 
 use crate::md_buffer::MdBuffer;
 
@@ -23,6 +24,11 @@ const IV: [u32; 4] = [0x6745_2301, 0xefcd_ab89, 0x98ba_dcfe, 0x1032_5476];
 ///
 /// Constant time: the compression uses only additions, rotations and bitwise
 /// operations, and the running time depends only on the message length.
+///
+/// Dropping or resetting the digest, which `do_final` also does, wipes its
+/// chaining state and buffered input with volatile writes. Copies the
+/// compression leaves in registers or on the stack, such as the message words
+/// it reads, and copies a move leaves behind are not wiped.
 ///
 /// `do_final` panics if the output buffer is shorter than 16 bytes.
 #[derive(Clone)]
@@ -166,6 +172,14 @@ impl Md5Digest {
         h[1] = h[1].wrapping_add(b);
         h[2] = h[2].wrapping_add(c);
         h[3] = h[3].wrapping_add(d);
+    }
+}
+
+impl Drop for Md5Digest {
+    /// Wipes the chaining registers; the block buffer wipes itself.
+    /// Constant time.
+    fn drop(&mut self) {
+        self.h.zeroize();
     }
 }
 

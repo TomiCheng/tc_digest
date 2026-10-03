@@ -17,7 +17,8 @@ or HMAC-SHA1, which does not rely on collision resistance; use a SHA-2 digest
 for new signatures and designs.
 
 The crate is `no_std`, needs no allocator and contains no `unsafe` code. It
-depends only on `tc_digest`.
+depends on `tc_digest` and on [`tc_zeroize`](https://crates.io/crates/tc_zeroize),
+which wipes the digest state.
 
 Requires Rust 1.85 or later (edition 2024).
 
@@ -53,12 +54,23 @@ Every digest is constant time. The compressions use only additions,
 rotations, shifts and bitwise operations, and the running time depends only on
 the message length and, for SHA-512/t, on `t`.
 
+## Wiping
+
+Dropping a digest, or resetting it, which `do_final` also does, wipes its
+state with volatile writes through `tc_zeroize`: the chaining registers, the
+buffered block and its fill level, and the length count. `Sha512tDigest` keeps
+its IV, which is derived from the public `t`. A clone is wiped when it is
+dropped in turn. Copies the compression leaves in registers or on the stack,
+such as the message schedule, and copies a move leaves behind are not wiped,
+and drop-based wiping requires the destructor to run. The output buffer
+belongs to the caller.
+
 ## Usage
 
 ```toml
 [dependencies]
 tc_digest = "0.1.0"
-tc_sha = "0.1.0"
+tc_sha = "0.1.1"
 ```
 
 Import `Digest` to reach the digest's methods:
@@ -88,10 +100,12 @@ padding boundaries and for one million `'a'` bytes. Contract tests check, for
 every digest and for SHA-512/t at `t` of 8, 224, 256 and 504, that splitting a
 message across updates never changes the digest, that `do_final` writes
 exactly `digest_size` bytes and resets, that a short output buffer panics
-without changing state, and that a clone continues independently. Another test
-requires every digest type and internal helper to document whether it is
-constant or variable time. Missing public documentation is rejected by a
-crate-level lint, and `unsafe` code is forbidden.
+without changing state, and that a clone continues independently. A unit
+test checks that the block buffer's wipe clears its buffered bytes, fill level
+and length count, and a contract test checks that every digest runs a
+destructor. Another test requires every digest type and internal helper to
+document whether it is constant or variable time. Missing public documentation
+is rejected by a crate-level lint, and `unsafe` code is forbidden.
 
 Run these commands from the workspace root:
 

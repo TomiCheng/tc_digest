@@ -18,7 +18,8 @@ attacker, password hashing or any new design; use a SHA-2 digest from
 [`tc_sha`](https://crates.io/crates/tc_sha) instead.
 
 The crate is `no_std`, needs no allocator and contains no `unsafe` code. It
-depends only on `tc_digest`.
+depends on `tc_digest` and on [`tc_zeroize`](https://crates.io/crates/tc_zeroize),
+which wipes the digest state.
 
 Requires Rust 1.85 or later (edition 2024).
 
@@ -44,12 +45,23 @@ running time depends only on the message length. MD2 indexes a 256-byte S-box
 with bytes derived from the message, which can leak the message through cache
 timing: hash only public data with `Md2Digest`.
 
+## Wiping
+
+Dropping a digest, or resetting it, which `do_final` also does, wipes its
+state with volatile writes through `tc_zeroize`: the chaining registers, the
+buffered block and its fill level, and the length count, or for MD2 the state,
+the buffered block and the checksum. A clone is wiped when it is dropped in
+turn. Copies the compression leaves in registers or on the stack, such as the
+message words it reads, and copies a move leaves behind are not wiped, and
+drop-based wiping requires the destructor to run. The output buffer belongs to
+the caller.
+
 ## Usage
 
 ```toml
 [dependencies]
 tc_digest = "0.1.0"
-tc_md = "0.1.0"
+tc_md = "0.1.1"
 ```
 
 Import `Digest` to reach the digest's methods:
@@ -74,8 +86,11 @@ messages on the 64-byte padding boundaries and for one million `'a'` bytes.
 Contract tests check, for every digest, that splitting a message across
 updates never changes the digest, that `do_final` writes exactly 16 bytes and
 resets, that a short output buffer panics without changing state, and that a
-clone continues independently. Another test requires every digest type and
-internal helper to document whether it is constant or variable time. Missing
+clone continues independently. A unit test checks that the block buffer's
+wipe clears its buffered bytes, fill level and length count, and a contract
+test checks that every digest runs a destructor. Another test requires every
+digest type and internal helper to document whether it is constant or variable
+time. Missing
 public documentation is rejected by a crate-level lint, and `unsafe` code is
 forbidden.
 

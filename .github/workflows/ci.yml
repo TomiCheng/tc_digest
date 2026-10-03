@@ -1,8 +1,8 @@
 name: CI
 
+# CI runs on pull requests only. Pushes are not tested, including merges and
+# direct commits to develop; the develop-to-main pull request tests those.
 on:
-  push:
-    branches: [develop, main]
   pull_request:
     branches: [develop, main]
   workflow_dispatch:
@@ -80,8 +80,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         env:
           RUSTUP_TOOLCHAIN: 1.85.0
-      # No crate has a feature or a dependency outside the workspace, so Rust
-      # 1.85 covers every build, tests included.
+      # No crate has a feature, and the only dependency outside the workspace
+      # is tc_zeroize, which requires 1.85 as well, so Rust 1.85 covers every
+      # build, tests included.
       - run: cargo +1.85.0 test --locked
 
   quality:
@@ -137,6 +138,6 @@ jobs:
           # resolve the same sets as the portable ones.
           for target in aarch64-unknown-none wasm32-unknown-unknown x86_64-unknown-linux-gnu i686-unknown-linux-gnu; do
             check 'tc_digest' -p tc_digest --target "$target"
-            check 'tc_digest tc_md' -p tc_md --target "$target"
-            check 'tc_digest tc_sha' -p tc_sha --target "$target"
+            check 'tc_digest tc_md tc_zeroize' -p tc_md --target "$target"
+            check 'tc_digest tc_sha tc_zeroize' -p tc_sha --target "$target"
           done

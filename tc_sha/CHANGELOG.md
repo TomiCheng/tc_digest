@@ -2,6 +2,27 @@
 
 All notable changes to `tc_sha` are documented in this file.
 
+## 0.1.1 - Unreleased
+
+### Added
+
+- Every digest wipes its state on drop with volatile writes through
+  `tc_zeroize`: the chaining registers, the buffered block and its fill level,
+  and the length count. `Sha512tDigest` keeps its IV, which is derived from the
+  public `t`. Resetting, which `do_final` also does, wipes the previous state
+  the same way. Each digest's documentation states what is wiped.
+
+### Compatibility
+
+- Adds a dependency on `tc_zeroize` 0.1, which needs no allocator and
+  requires Rust 1.85.
+- No public signature changes. Every digest now implements `Drop`, so a
+  digest can no longer be dropped inside a `const fn`; `const fn new` and
+  `const` items still work.
+- Copies the compression leaves in registers or on the stack, and copies a
+  move leaves behind, are not wiped. Drop-based wiping requires the destructor
+  to run.
+
 ## 0.1.0 - 2026-09-25
 
 Initial release.
