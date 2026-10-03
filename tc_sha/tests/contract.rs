@@ -177,3 +177,15 @@ fn digests_are_clone_send_and_sync() {
     assert_traits::<Sha512Digest>();
     assert_traits::<Sha512tDigest>();
 }
+
+#[test]
+fn every_digest_runs_a_destructor() {
+    // The wipe itself cannot be observed without unsafe code; this guards
+    // against the destructors that perform it disappearing.
+    assert!(std::mem::needs_drop::<Sha1Digest>());
+    assert!(std::mem::needs_drop::<Sha224Digest>());
+    assert!(std::mem::needs_drop::<Sha256Digest>());
+    assert!(std::mem::needs_drop::<Sha384Digest>());
+    assert!(std::mem::needs_drop::<Sha512Digest>());
+    assert!(std::mem::needs_drop::<Sha512tDigest>());
+}

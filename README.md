@@ -15,8 +15,8 @@ validation commands.
 | Crate | Version | Description |
 | --- | --- | --- |
 | [`tc_digest`](tc_digest) | [![crates.io](https://img.shields.io/crates/v/tc_digest.svg)](https://crates.io/crates/tc_digest) [![docs.rs](https://docs.rs/tc_digest/badge.svg)](https://docs.rs/tc_digest) | Streaming digest and extendable-output function traits, each in a fallible form and an infallible form that blanket implementations supply. No algorithm. `no_std`, no allocator, no `unsafe`, no dependencies. |
-| [`tc_md`](tc_md) | [![crates.io](https://img.shields.io/crates/v/tc_md.svg)](https://crates.io/crates/tc_md) [![docs.rs](https://docs.rs/tc_md/badge.svg)](https://docs.rs/tc_md) | MD2, MD4 and MD5 for legacy interoperability. MD4 and MD5 are constant time; MD2 is variable time. `no_std`, no allocator, no `unsafe`; depends on `tc_digest`. |
-| [`tc_sha`](tc_sha) | [![crates.io](https://img.shields.io/crates/v/tc_sha.svg)](https://crates.io/crates/tc_sha) [![docs.rs](https://docs.rs/tc_sha/badge.svg)](https://docs.rs/tc_sha) | SHA-1, SHA-224, SHA-256, SHA-384, SHA-512 and SHA-512/t (FIPS 180-4). Every digest is constant time. `no_std`, no allocator, no `unsafe`; depends on `tc_digest`. |
+| [`tc_md`](tc_md) | [![crates.io](https://img.shields.io/crates/v/tc_md.svg)](https://crates.io/crates/tc_md) [![docs.rs](https://docs.rs/tc_md/badge.svg)](https://docs.rs/tc_md) | MD2, MD4 and MD5 for legacy interoperability. MD4 and MD5 are constant time; MD2 is variable time. Every digest wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
+| [`tc_sha`](tc_sha) | [![crates.io](https://img.shields.io/crates/v/tc_sha.svg)](https://crates.io/crates/tc_sha) [![docs.rs](https://docs.rs/tc_sha/badge.svg)](https://docs.rs/tc_sha) | SHA-1, SHA-224, SHA-256, SHA-384, SHA-512 and SHA-512/t (FIPS 180-4). Every digest is constant time and wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
 
 `tc_digest` defines the contract and knows no algorithm; each digest crate
 implements it and documents its own output lengths, buffer checks and timing
@@ -28,8 +28,9 @@ Rust 1.85 or later, edition 2024. Every crate builds without `std` and
 without an allocator, and none has a Cargo feature.
 
 Rust 1.85 is the earliest compiler for edition 2024, and it is guaranteed for
-every crate in this workspace, tests included: no crate depends on anything
-outside the workspace. The workspace lock tracks the latest dependency
+every crate in this workspace, tests included: the only dependency outside
+the workspace is `tc_zeroize`, which requires Rust 1.85 as well, and no crate
+uses a third-party dependency. The workspace lock tracks the latest dependency
 releases, so CI on stable tests what a user on a current toolchain resolves.
 
 ## Workspace checks

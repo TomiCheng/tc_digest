@@ -25,11 +25,11 @@ The crate list and workspace-wide checks live in the root
 [README.md](README.md); read it rather than restating it here. Every crate is
 `no_std` and needs no allocator; none has a Cargo feature. `extern crate alloc`
 appears only under `#[cfg(test)]`. `tc_digest` has no dependencies; `tc_md` and
-`tc_sha` depend on `tc_digest` alone. CI enforces each crate's dependency set
-with `cargo tree` on the `wasm32-unknown-unknown`, `aarch64-unknown-none` and
-x86 targets. `tc_digest` carries no algorithm knowledge: output lengths, block
-sizes, output-buffer checks and timing guarantees belong to the digest crates
-built on it, never to `tc_digest`.
+`tc_sha` depend on `tc_digest` and `tc_zeroize`. CI enforces each crate's
+dependency set with `cargo tree` on the `wasm32-unknown-unknown`,
+`aarch64-unknown-none` and x86 targets. `tc_digest` carries no algorithm
+knowledge: output lengths, block sizes, output-buffer checks and timing
+guarantees belong to the digest crates built on it, never to `tc_digest`.
 
 Digests name themselves through `Display`, not through the traits: `TryDigest`
 has no name method and does not require `Display`, just as `BlockCipher` and
@@ -44,6 +44,14 @@ variable time because it indexes its S-box with message-derived bytes.
 scanned file list there must grow with the crate. Keep the timing contract of
 each item stated in its doc comment.
 
+Every digest wipes its state on drop. `MdBuffer` implements
+`tc_zeroize::Zeroize` and wipes itself on drop, so a digest's own `Drop` wipes
+only its registers, and resets that assign a fresh value wipe the old one on
+the way. A new field that holds message-derived state must be wiped too.
+Copies on the stack, in registers or left behind by moves are a documented
+limitation, as in `tc_aes`, not wiped per block; each digest's doc comment and
+README say so.
+
 Each digest's `do_final` asserts the output length before touching any state,
 so a short buffer panics and leaves the digest usable; keep that order.
 `tc_md` and `tc_sha` each hold a private copy of `md_buffer.rs`, the shared
@@ -51,11 +59,13 @@ Merkle–Damgård block buffer. The copies must stay byte-for-byte identical, an
 CI compares them; change both together.
 
 Rust 1.85 is guaranteed for every build in the workspace, tests included,
-because nothing outside the workspace is a dependency or a dev-dependency. The
-MSRV job therefore runs `cargo test` on 1.85. APIs stabilized after 1.85, such
-as `<[T]>::as_chunks` (1.88) and `is_multiple_of` (1.87), are rejected by
-clippy's `incompatible_msrv` lint, which reads the inherited `rust-version`;
-the incubator's copies of these crates used both. `.cargo/config.toml` sets
+because the only dependency outside the workspace is the first-party
+`tc_zeroize`, which requires 1.85 as well, and there is no third-party
+dependency or dev-dependency. The MSRV job therefore runs `cargo test` on 1.85.
+APIs stabilized after 1.85, such as `<[T]>::as_chunks` (1.88) and
+`is_multiple_of` (1.87), are rejected by clippy's `incompatible_msrv` lint,
+which reads the inherited `rust-version`; the incubator's copies of these
+crates used both. `.cargo/config.toml` sets
 `incompatible-rust-versions = "allow"` so `Cargo.lock` tracks the latest
 releases. Adding any third-party dependency or dev-dependency hands part of
 the 1.85 guarantee to that crate; raise it before doing so.

@@ -4,6 +4,7 @@
 use core::{convert::Infallible, fmt};
 
 use tc_digest::TryDigest;
+use tc_zeroize::Zeroize;
 
 use crate::md_buffer::MdBuffer;
 
@@ -35,6 +36,11 @@ const Y4: u32 = 0xca62_c1d6;
 /// Constant time: the compression uses only additions, rotations, shifts and
 /// bitwise operations, and the running time depends only on the message
 /// length.
+///
+/// Dropping or resetting the digest, which `do_final` also does, wipes its
+/// chaining state and buffered input with volatile writes. Copies the
+/// compression leaves in registers or on the stack, such as the message
+/// schedule, and copies a move leaves behind are not wiped.
 ///
 /// `do_final` panics if the output buffer is shorter than 20 bytes.
 #[derive(Clone)]
@@ -108,6 +114,14 @@ impl Sha1Digest {
         h[2] = h[2].wrapping_add(c);
         h[3] = h[3].wrapping_add(d);
         h[4] = h[4].wrapping_add(e);
+    }
+}
+
+impl Drop for Sha1Digest {
+    /// Wipes the chaining registers; the block buffer wipes itself.
+    /// Constant time.
+    fn drop(&mut self) {
+        self.h.zeroize();
     }
 }
 

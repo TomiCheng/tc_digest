@@ -10,10 +10,16 @@
 //! MD5 little-endian; 64 or 128 bits wide), so [`finish`](MdBuffer::finish)
 //! does not encode the length itself: the caller passes the encoded bytes.
 
+use tc_zeroize::Zeroize;
+
 /// A block accumulator for `N`-byte Merkle–Damgård blocks.
 ///
 /// `N` is the compression block size in bytes: 64 for MD4, MD5, SHA-1 and
 /// SHA-256, 128 for SHA-384 and SHA-512.
+///
+/// The buffered block holds message bytes, so the buffer wipes itself on drop.
+/// Every digest that embeds one, and every assignment that replaces one,
+/// therefore wipes the buffered input without further code.
 #[derive(Clone)]
 pub(crate) struct MdBuffer<const N: usize> {
     /// The partially filled current block.
@@ -115,6 +121,23 @@ impl<const N: usize> MdBuffer<N> {
     }
 }
 
+impl<const N: usize> Zeroize for MdBuffer<N> {
+    /// Wipes the buffered block, the offset and the length count with volatile
+    /// writes, leaving an empty buffer. Constant time.
+    fn zeroize(&mut self) {
+        self.block.zeroize();
+        self.offset.zeroize();
+        self.byte_count.zeroize();
+    }
+}
+
+impl<const N: usize> Drop for MdBuffer<N> {
+    /// Wipes the buffer through [`Zeroize`]. Constant time.
+    fn drop(&mut self) {
+        self.zeroize();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use alloc::vec::Vec;
@@ -176,6 +199,18 @@ mod tests {
         assert_eq!(whole, chunked);
         // 130 = 2 * 64 + 2: two message blocks and one padding block.
         assert_eq!(whole.len(), 3);
+    }
+
+    #[test]
+    fn zeroize_wipes_the_buffered_bytes_offset_and_count() {
+        let mut buf = MdBuffer::<64>::new();
+        buf.update(&[0xa5; 70], |_| {});
+        assert!(buf.block[..6].iter().all(|&x| x == 0xa5));
+        assert_eq!((buf.offset, buf.byte_count), (6, 70));
+
+        buf.zeroize();
+        assert!(buf.block.iter().all(|&x| x == 0));
+        assert_eq!((buf.offset, buf.byte_count), (0, 0));
     }
 
     /// The const generic also holds for 128-byte blocks with a SHA-512-style
