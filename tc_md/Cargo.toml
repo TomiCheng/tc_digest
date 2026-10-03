@@ -1,6 +1,6 @@
 [package]
 name = "tc_md"
-version = "0.1.0"
+version = "0.1.1"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -14,3 +14,4 @@ include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LI
 
 [dependencies]
 tc_digest = { version = "0.1.0", path = "../tc_digest" }
+tc_zeroize = "0.1.0"

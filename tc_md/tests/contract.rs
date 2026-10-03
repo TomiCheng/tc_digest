@@ -148,3 +148,12 @@ fn digests_are_clone_send_and_sync() {
     assert_traits::<Md4Digest>();
     assert_traits::<Md5Digest>();
 }
+
+#[test]
+fn every_digest_runs_a_destructor() {
+    // The wipe itself cannot be observed without unsafe code; this guards
+    // against the destructors that perform it disappearing.
+    assert!(std::mem::needs_drop::<Md2Digest>());
+    assert!(std::mem::needs_drop::<Md4Digest>());
+    assert!(std::mem::needs_drop::<Md5Digest>());
+}
