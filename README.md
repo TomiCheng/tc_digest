@@ -2,7 +2,8 @@
 
 A Rust workspace for message digests. It holds `tc_digest`, the shared traits
 through which a digest or an extendable-output function absorbs a message and
-writes its output, and the digest crates built on it: `tc_md` and `tc_sha`.
+writes its output, and the digest crates built on it: `tc_keccak`, `tc_md`
+and `tc_sha`.
 Each crate is published separately and keeps its own README, changelog, and
 validation commands.
 
@@ -15,6 +16,7 @@ validation commands.
 | Crate | Version | Description |
 | --- | --- | --- |
 | [`tc_digest`](tc_digest) | [![crates.io](https://img.shields.io/crates/v/tc_digest.svg)](https://crates.io/crates/tc_digest) [![docs.rs](https://docs.rs/tc_digest/badge.svg)](https://docs.rs/tc_digest) | Streaming digest and extendable-output function traits, each in a fallible form and an infallible form that blanket implementations supply. No algorithm. `no_std`, no allocator, no `unsafe`, no dependencies. |
+| [`tc_keccak`](tc_keccak) | [![crates.io](https://img.shields.io/crates/v/tc_keccak.svg)](https://crates.io/crates/tc_keccak) [![docs.rs](https://docs.rs/tc_keccak/badge.svg)](https://docs.rs/tc_keccak) | Keccak, SHA3-224 to SHA3-512, SHAKE128 and SHAKE256 (FIPS 202), and cSHAKE, TupleHash and ParallelHash (NIST SP 800-185). Every digest is constant time and wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
 | [`tc_md`](tc_md) | [![crates.io](https://img.shields.io/crates/v/tc_md.svg)](https://crates.io/crates/tc_md) [![docs.rs](https://docs.rs/tc_md/badge.svg)](https://docs.rs/tc_md) | MD2, MD4 and MD5 for legacy interoperability. MD4 and MD5 are constant time; MD2 is variable time. Every digest wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
 | [`tc_sha`](tc_sha) | [![crates.io](https://img.shields.io/crates/v/tc_sha.svg)](https://crates.io/crates/tc_sha) [![docs.rs](https://docs.rs/tc_sha/badge.svg)](https://docs.rs/tc_sha) | SHA-1, SHA-224, SHA-256, SHA-384, SHA-512 and SHA-512/t (FIPS 180-4). Every digest is constant time and wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
 
