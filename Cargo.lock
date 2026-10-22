@@ -7,6 +7,14 @@ name = "tc_digest"
 version = "0.1.0"
 
 [[package]]
+name = "tc_keccak"
+version = "0.1.0"
+dependencies = [
+ "tc_digest",
+ "tc_zeroize",
+]
+
+[[package]]
 name = "tc_md"
 version = "0.1.1"
 dependencies = [

@@ -1,0 +1,17 @@
+[package]
+name = "tc_keccak"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Keccak, SHA-3, SHAKE, cSHAKE, TupleHash and ParallelHash (FIPS 202, NIST SP 800-185)."
+readme = "README.md"
+documentation = "https://docs.rs/tc_keccak"
+keywords = ["sha3", "shake", "keccak", "hash", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[dependencies]
+tc_digest = { version = "0.1.0", path = "../tc_digest" }
+tc_zeroize = "0.1.0"
