@@ -2,8 +2,8 @@
 
 A Rust workspace for message digests. It holds `tc_digest`, the shared traits
 through which a digest or an extendable-output function absorbs a message and
-writes its output, and the digest crates built on it: `tc_keccak`, `tc_md`
-and `tc_sha`.
+writes its output, and the digest crates built on it: `tc_ascon_hash`,
+`tc_keccak`, `tc_md` and `tc_sha`.
 Each crate is published separately and keeps its own README, changelog, and
 validation commands.
 
@@ -15,6 +15,7 @@ validation commands.
 
 | Crate | Version | Description |
 | --- | --- | --- |
+| [`tc_ascon_hash`](tc_ascon_hash) | [![crates.io](https://img.shields.io/crates/v/tc_ascon_hash.svg)](https://crates.io/crates/tc_ascon_hash) [![docs.rs](https://docs.rs/tc_ascon_hash/badge.svg)](https://docs.rs/tc_ascon_hash) | Ascon-Hash256, Ascon-XOF128 and Ascon-CXOF128 (NIST SP 800-232); the deprecated Ascon v1.2 hashes and XOFs and ISAP Hash with the `legacy` feature. Every digest is constant time and wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
 | [`tc_digest`](tc_digest) | [![crates.io](https://img.shields.io/crates/v/tc_digest.svg)](https://crates.io/crates/tc_digest) [![docs.rs](https://docs.rs/tc_digest/badge.svg)](https://docs.rs/tc_digest) | Streaming digest and extendable-output function traits, each in a fallible form and an infallible form that blanket implementations supply. No algorithm. `no_std`, no allocator, no `unsafe`, no dependencies. |
 | [`tc_keccak`](tc_keccak) | [![crates.io](https://img.shields.io/crates/v/tc_keccak.svg)](https://crates.io/crates/tc_keccak) [![docs.rs](https://docs.rs/tc_keccak/badge.svg)](https://docs.rs/tc_keccak) | Keccak, SHA3-224 to SHA3-512, SHAKE128 and SHAKE256 (FIPS 202), and cSHAKE, TupleHash and ParallelHash (NIST SP 800-185). Every digest is constant time and wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
 | [`tc_md`](tc_md) | [![crates.io](https://img.shields.io/crates/v/tc_md.svg)](https://crates.io/crates/tc_md) [![docs.rs](https://docs.rs/tc_md/badge.svg)](https://docs.rs/tc_md) | MD2, MD4 and MD5 for legacy interoperability. MD4 and MD5 are constant time; MD2 is variable time. Every digest wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
@@ -27,7 +28,8 @@ guarantees.
 ## Requirements
 
 Rust 1.85 or later, edition 2024. Every crate builds without `std` and
-without an allocator, and none has a Cargo feature.
+without an allocator. The only Cargo feature is `tc_ascon_hash`'s `legacy`,
+off by default, which adds the pre-standard Ascon digests and no dependency.
 
 Rust 1.85 is the earliest compiler for edition 2024, and it is guaranteed for
 every crate in this workspace, tests included: the only dependency outside
@@ -39,9 +41,11 @@ releases, so CI on stable tests what a user on a current toolchain resolves.
 
 ```text
 cargo test --locked
+cargo test --locked --all-features
 cargo fmt --all -- --check
 cargo clippy --locked --all-targets -- -D warnings
-cargo doc --locked --no-deps
+cargo clippy --locked --all-targets --all-features -- -D warnings
+cargo doc --locked --no-deps --all-features
 ```
 
 CI additionally runs these on Linux x64, i686 and ARM64, macOS ARM64, and
