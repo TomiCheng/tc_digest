@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["tc_ascon_hash", "tc_digest", "tc_keccak", "tc_md", "tc_sha"]
+members = ["tc_ascon_hash", "tc_blake", "tc_digest", "tc_keccak", "tc_md", "tc_sha"]
 
 [workspace.package]
 edition = "2024"
