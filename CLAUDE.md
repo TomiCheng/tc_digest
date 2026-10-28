@@ -23,21 +23,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The crate list and workspace-wide checks live in the root
 [README.md](README.md); read it rather than restating it here. Every crate is
-`no_std` and needs no allocator. Two crates have a Cargo feature, both off by
-default: `tc_ascon_hash`'s `legacy` adds the pre-standard Ascon digests and no
-dependency, and `tc_blake`'s `blake3` runs BLAKE3 on the third-party `blake3`
-crate. CI runs every job with and without `--all-features`, except that the
+`no_std` and, by default, needs no allocator. Three crates have a Cargo
+feature, all off by default: `tc_digest`'s `alloc` adds the adapter digests,
+which need an allocator and `tc_zeroize`; `tc_ascon_hash`'s `legacy` adds the
+pre-standard Ascon digests and no dependency; and `tc_blake`'s `blake3` runs
+BLAKE3 on the third-party `blake3` crate. CI runs every job with and without `--all-features`, except that the
 `aarch64-unknown-none` check leaves out `tc_blake`'s feature, whose NEON C code
 needs a cross compiler there. `extern crate alloc` appears only under
-`#[cfg(test)]`. `tc_digest` has no dependencies; the digest crates depend on
+`#[cfg(test)]`, and under `tc_digest`'s `alloc` feature. `tc_digest` has no
+dependencies without that feature; the digest crates depend on
 `tc_digest` and `tc_zeroize`, and `tc_blake` also on `tc_runtime` on x86 and,
 with its feature, on `blake3` and `zeroize`. `tc_blake` is the only crate with
 `unsafe` code, its x86 BLAKE2 vector compression behind `tc_runtime` detection
 tokens; it denies `unsafe_code` and allows it only there. CI enforces each crate's
 dependency set with `cargo tree` on the `wasm32-unknown-unknown`,
-`aarch64-unknown-none` and x86 targets. `tc_digest` carries no algorithm
-knowledge: output lengths, block sizes, output-buffer checks and timing
-guarantees belong to the digest crates built on it, never to `tc_digest`.
+`aarch64-unknown-none` and x86 targets. `tc_digest` carries no hash algorithm:
+the traits fix no output length, block size, output-buffer check or timing
+guarantee, which belong to each implementation. Generic adapters built on the
+traits, such as `NullDigest`, `Prehash` and `ShortenedDigest` in the `util`
+module under the `alloc` feature, may live in `tc_digest`; like any digest, each documents its own
+output length, buffer check and timing, which `tc_digest/tests/documentation.rs`
+checks, and the scanned file list there must grow with the module.
 
 Digests name themselves through `Display`, not through the traits: `TryDigest`
 has no name method and does not require `Display`, just as `BlockCipher` and

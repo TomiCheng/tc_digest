@@ -2,6 +2,27 @@
 
 All notable changes to `tc_digest` are documented in this file.
 
+## 0.1.1 - 2026-10-28
+
+### Added
+
+- The `alloc` feature, off by default, and the `util` module with three
+  adapter digests ported from Bouncy Castle: `NullDigest`, which writes its input back unchanged;
+  `Prehash` and `PrehashError`, a fixed-length pass-through for a digest value
+  computed elsewhere; and `ShortenedDigest`, which truncates another digest's
+  output. They name themselves through `Display`.
+- Integration tests for the adapters and a test that requires each adapter
+  type and helper to document its timing.
+
+### Compatibility
+
+- Additive: the traits are unchanged, and without the `alloc` feature the
+  crate still needs no allocator and has no dependencies.
+- The `alloc` feature depends on `tc_zeroize` 0.1. `NullDigest` and `Prehash`
+  wipe the bytes they hold when written out, on reset and on drop;
+  `ShortenedDigest` wipes the base's full output after copying the prefix.
+  Copies left in registers or on the stack are not wiped.
+
 ## 0.1.0 - 2026-09-25
 
 Initial release.
