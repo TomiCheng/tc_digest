@@ -23,11 +23,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The crate list and workspace-wide checks live in the root
 [README.md](README.md); read it rather than restating it here. Every crate is
-`no_std` and needs no allocator. The only Cargo feature is `tc_ascon_hash`'s
-`legacy`, off by default, which adds the pre-standard Ascon digests and no
-dependency; CI runs every job with and without `--all-features`. `extern crate
-alloc` appears only under `#[cfg(test)]`. `tc_digest` has no dependencies; the
-digest crates depend on `tc_digest` and `tc_zeroize`. CI enforces each crate's
+`no_std` and needs no allocator. Two crates have a Cargo feature, both off by
+default: `tc_ascon_hash`'s `legacy` adds the pre-standard Ascon digests and no
+dependency, and `tc_blake`'s `blake3` runs BLAKE3 on the third-party `blake3`
+crate. CI runs every job with and without `--all-features`, except that the
+`aarch64-unknown-none` check leaves out `tc_blake`'s feature, whose NEON C code
+needs a cross compiler there. `extern crate alloc` appears only under
+`#[cfg(test)]`. `tc_digest` has no dependencies; the digest crates depend on
+`tc_digest` and `tc_zeroize`, and `tc_blake` also on `tc_runtime` on x86 and,
+with its feature, on `blake3` and `zeroize`. `tc_blake` is the only crate with
+`unsafe` code, its x86 BLAKE2 vector compression behind `tc_runtime` detection
+tokens; it denies `unsafe_code` and allows it only there. CI enforces each crate's
 dependency set with `cargo tree` on the `wasm32-unknown-unknown`,
 `aarch64-unknown-none` and x86 targets. `tc_digest` carries no algorithm
 knowledge: output lengths, block sizes, output-buffer checks and timing
@@ -39,8 +45,8 @@ has no name method and does not require `Display`, just as `BlockCipher` and
 Each `Display` implementation writes a fixed name without inspecting the
 digest state, and its `fmt` documents its timing like any other helper.
 
-Every digest in `tc_ascon_hash`, `tc_keccak` and `tc_sha` and MD4 and MD5 in
-`tc_md` are constant time; MD2 is variable time because it indexes its S-box
+Every digest in `tc_ascon_hash`, `tc_blake`, `tc_keccak` and `tc_sha` and MD4
+and MD5 in `tc_md` are constant time; MD2 is variable time because it indexes its S-box
 with message-derived bytes.
 `tests/documentation.rs` in each digest crate requires every `*Digest` type,
 `pub`/`pub(crate)` function and compression helper to say which, and the
@@ -62,9 +68,13 @@ Merkle–Damgård block buffer. The copies must stay byte-for-byte identical, an
 CI compares them; change both together.
 
 Rust 1.85 is guaranteed for every build in the workspace, tests included,
-because the only dependency outside the workspace is the first-party
-`tc_zeroize`, which requires 1.85 as well, and there is no third-party
-dependency or dev-dependency. The MSRV job therefore runs `cargo test` on 1.85.
+because the first-party dependencies outside the workspace, `tc_zeroize` and
+`tc_runtime`, require 1.85 as well, the only third-party ones, the `blake3`
+crate and its dependencies behind `tc_blake`'s feature, build on 1.85, and
+the only third-party dev-dependency, `tc_blake`'s Criterion for its
+benchmarks, is held at 0.7 because 0.8 needs Rust 1.86. The MSRV job
+therefore runs `cargo test`, which builds dev-dependencies, on 1.85, with
+and without `--all-features`.
 APIs stabilized after 1.85, such as `<[T]>::as_chunks` (1.88) and
 `is_multiple_of` (1.87), are rejected by clippy's `incompatible_msrv` lint,
 which reads the inherited `rust-version`; the incubator's copies of these
