@@ -10,7 +10,7 @@ readme = "README.md"
 documentation = "https://docs.rs/tc_blake"
 keywords = ["blake2", "blake3", "hash", "xof", "no-std"]
 categories = ["cryptography", "no-std"]
-include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+include = ["src/**", "tests/**", "benches/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
 
 [features]
 default = []
@@ -28,6 +28,22 @@ zeroize = { version = "1", optional = true, default-features = false }
 # Detects AVX2 and SSE2 on x86 without std, for the BLAKE2 vector code.
 [target.'cfg(any(target_arch = "x86", target_arch = "x86_64"))'.dependencies]
 tc_runtime = "0.1.0"
+
+[dev-dependencies]
+# Benchmarks only. 0.8 needs Rust 1.86, so 0.7 keeps the tests on 1.85.
+criterion = "0.7"
+
+[[bench]]
+name = "blake2b"
+harness = false
+
+[[bench]]
+name = "blake2s"
+harness = false
+
+[[bench]]
+name = "blake3"
+harness = false
 
 [package.metadata.docs.rs]
 all-features = true

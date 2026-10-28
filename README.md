@@ -37,7 +37,8 @@ Rust 1.85 is the earliest compiler for edition 2024, and it is guaranteed for
 every crate in this workspace, tests included: the first-party dependencies,
 `tc_zeroize` and `tc_runtime`, require Rust 1.85 as well, and the only
 third-party ones, the `blake3` crate and its dependencies behind `tc_blake`'s
-`blake3` feature, build on it. The workspace lock tracks the latest dependency
+`blake3` feature, build on it, as does Criterion 0.7, `tc_blake`'s benchmark
+dev-dependency. The workspace lock tracks the latest dependency
 releases, so CI on stable tests what a user on a current toolchain resolves.
 
 ## Workspace checks

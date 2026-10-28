@@ -136,7 +136,28 @@ cargo publish -p tc_blake --dry-run --locked
 ```
 
 The archive includes both license texts, this README, the changelog, the
-source and the tests. It must not include `target/` or other build artifacts.
+source, the tests and the benchmarks. It must not include `target/` or other build artifacts.
+
+## Benchmarks
+
+Criterion benchmarks measure BLAKE2b, BLAKE2s and BLAKE3 throughput for
+messages from 64 bytes to 1 MiB. Use a measurement window of at least 15
+seconds; shorter ones are noisy on a desktop machine:
+
+```text
+cargo bench -p tc_blake --bench blake2b -- --warm-up-time 3 --measurement-time 15
+```
+
+Disabling the vector code in `tc_runtime` measures the portable code instead,
+and the `blake3` feature measures the `blake3` crate:
+
+```text
+cargo bench -p tc_blake --bench blake2b --features tc_runtime/disable-x86-avx2
+cargo bench -p tc_blake --bench blake3 --features blake3
+```
+
+Criterion is the only dev-dependency. Its 0.7 line is used because 0.8 needs
+Rust 1.86, and the tests, which build dev-dependencies, run on Rust 1.85.
 
 ## License
 

@@ -20,6 +20,7 @@ Initial release.
 - `Display` writes Bouncy Castle's name for every digest, such as `BLAKE2b` or
   `BLAKE3`.
 - Every digest is constant time and wipes its state, buffers and key on drop.
+- Criterion benchmarks for BLAKE2b, BLAKE2s and BLAKE3.
 
 ### Compatibility
 

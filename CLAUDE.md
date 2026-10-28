@@ -71,8 +71,10 @@ Rust 1.85 is guaranteed for every build in the workspace, tests included,
 because the first-party dependencies outside the workspace, `tc_zeroize` and
 `tc_runtime`, require 1.85 as well, the only third-party ones, the `blake3`
 crate and its dependencies behind `tc_blake`'s feature, build on 1.85, and
-there is no third-party dev-dependency. The MSRV job therefore runs
-`cargo test` on 1.85, with and without `--all-features`.
+the only third-party dev-dependency, `tc_blake`'s Criterion for its
+benchmarks, is held at 0.7 because 0.8 needs Rust 1.86. The MSRV job
+therefore runs `cargo test`, which builds dev-dependencies, on 1.85, with
+and without `--all-features`.
 APIs stabilized after 1.85, such as `<[T]>::as_chunks` (1.88) and
 `is_multiple_of` (1.87), are rejected by clippy's `incompatible_msrv` lint,
 which reads the inherited `rust-version`; the incubator's copies of these
