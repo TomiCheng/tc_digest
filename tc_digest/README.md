@@ -12,8 +12,10 @@ Shared traits for streaming message digests and extendable-output functions
 hashes a message names only the capabilities it uses. The crate implements no
 algorithm.
 
-It is `no_std`, needs no allocator, contains no `unsafe` code, and has no
-dependencies.
+It is `no_std` and contains no `unsafe` code. By default it needs no allocator
+and has no dependencies; the `alloc` feature adds three adapter digests,
+which need an allocator and depend on
+[`tc_zeroize`](https://crates.io/crates/tc_zeroize) to wipe what they hold.
 
 Requires Rust 1.85 or later (edition 2024).
 
@@ -39,6 +41,26 @@ Besides processing, a digest reports `digest_size`, the number of bytes
 pads its key to. The traits carry no algorithm name: digest crates implement
 `Display` to write it, such as `SHA-256`, and generic code that needs the name
 adds a `Display` bound.
+
+## Adapters
+
+With the `alloc` feature, off by default, the `util` module has three digests
+built on the traits, none of them a hash algorithm, ported from Bouncy
+Castle:
+
+- `util::NullDigest` — keeps every input byte and writes them back unchanged; a
+  signer uses it when the message is already the value to sign.
+- `util::Prehash` — takes exactly one digest value computed elsewhere and writes
+  it back, returning `PrehashError` for a wrong length.
+- `util::ShortenedDigest` — the first bytes of another digest's output.
+
+`NullDigest` and `Prehash` are constant time with respect to the bytes they
+hold, whose number is public, and wipe them when written out, on reset and on
+drop. `ShortenedDigest` is constant time when its base digest is, and wipes
+the base's full output after copying the prefix. Each panics, before
+changing any state, when the output buffer is shorter than its digest size.
+`Display` writes `NULL`, the name given to `Prehash`, or the base's name and
+the length in bits, such as `SHA-256(128)`.
 
 ## Usage
 
@@ -89,15 +111,20 @@ continues across calls and restarts after `output_final`, and that both
 infallible traits work as trait objects. Missing public documentation is
 rejected by a crate-level lint, and `unsafe` code is forbidden. The digests in
 `tc_md` and `tc_sha` exercise the traits against published known-answer
-vectors.
+vectors. With the `alloc` feature, integration tests check each adapter
+against a toy digest, including the panic on a short output buffer before any
+state changes, and another test requires every adapter type and helper to
+document whether it is constant or variable time.
 
 Run these commands from the workspace root:
 
 ```text
 cargo test -p tc_digest --locked
+cargo test -p tc_digest --all-features --locked
 cargo clippy -p tc_digest --all-targets --locked -- -D warnings
+cargo clippy -p tc_digest --all-targets --all-features --locked -- -D warnings
 cargo fmt -p tc_digest --check
-cargo doc -p tc_digest --no-deps --locked
+cargo doc -p tc_digest --no-deps --all-features --locked
 ```
 
 Before a release, check the archive contents and run publication validation
@@ -108,8 +135,8 @@ cargo package -p tc_digest --list --locked
 cargo publish -p tc_digest --dry-run --locked
 ```
 
-The archive includes both license texts, this README, the changelog and the
-source. It must not include `target/` or other build artifacts.
+The archive includes both license texts, this README, the changelog, the
+source and the tests. It must not include `target/` or other build artifacts.
 
 ## License
 

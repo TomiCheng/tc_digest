@@ -1,6 +1,6 @@
 [package]
 name = "tc_digest"
-version = "0.1.0"
+version = "0.1.1"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -10,4 +10,16 @@ readme = "README.md"
 documentation = "https://docs.rs/tc_digest"
 keywords = ["digest", "hash", "xof", "cryptography", "no-std"]
 categories = ["cryptography", "no-std"]
-include = ["src/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[features]
+default = []
+# NullDigest, Prehash and ShortenedDigest, which need an allocator and wipe
+# what they hold through tc_zeroize.
+alloc = ["dep:tc_zeroize", "tc_zeroize/alloc"]
+
+[dependencies]
+tc_zeroize = { version = "0.1.0", optional = true }
+
+[package.metadata.docs.rs]
+all-features = true

@@ -15,6 +15,15 @@
 //! [`Display`](core::fmt::Display), as the example below does, and generic code
 //! that needs the name adds a `Display` bound.
 //!
+//! # Adapters
+//!
+//! With the `alloc` feature the `util` module has three digests built on the
+//! traits, none of them a hash algorithm, as Bouncy Castle has them:
+//! `NullDigest` writes its input back unchanged, `Prehash` passes through
+//! one digest value computed elsewhere, and `ShortenedDigest` truncates
+//! another digest's output. They need an allocator and wipe what they hold
+//! through `tc_zeroize`; without the feature the crate has no dependencies.
+//!
 //! # Example
 //!
 //! A toy digest that sums its input bytes. It implements [`TryDigest`] with an
@@ -91,7 +100,12 @@
 #![deny(missing_docs)]
 #![forbid(unsafe_code)]
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
 mod digest;
+#[cfg(feature = "alloc")]
+pub mod util;
 mod xof;
 
 pub use digest::{Digest, TryDigest};

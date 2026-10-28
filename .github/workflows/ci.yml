@@ -163,6 +163,7 @@ jobs:
             check "$blake" -p tc_blake --target "$target"
             check "$blake3" -p tc_blake --all-features --target "$target"
             check 'tc_digest' -p tc_digest --target "$target"
+            check 'tc_digest tc_zeroize' -p tc_digest --all-features --target "$target"
             check 'tc_digest tc_keccak tc_zeroize' -p tc_keccak --target "$target"
             check 'tc_digest tc_md tc_zeroize' -p tc_md --target "$target"
             check 'tc_digest tc_sha tc_zeroize' -p tc_sha --target "$target"
