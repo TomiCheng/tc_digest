@@ -1,0 +1,26 @@
+[package]
+name = "tc_ascon_hash"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Ascon-Hash256, Ascon-XOF128 and Ascon-CXOF128 (NIST SP 800-232), the Ascon v1.2 hashes and ISAP Hash."
+readme = "README.md"
+documentation = "https://docs.rs/tc_ascon_hash"
+keywords = ["ascon", "hash", "xof", "lightweight", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[features]
+default = []
+# The pre-standard digests: the deprecated Ascon v1.2 hashes and XOFs, and ISAP Hash.
+legacy = []
+
+[dependencies]
+tc_digest = { version = "0.1.0", path = "../tc_digest" }
+# Wipes the state and the buffered bytes on drop.
+tc_zeroize = "0.1.0"
+
+[package.metadata.docs.rs]
+all-features = true

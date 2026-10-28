@@ -23,9 +23,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The crate list and workspace-wide checks live in the root
 [README.md](README.md); read it rather than restating it here. Every crate is
-`no_std` and needs no allocator; none has a Cargo feature. `extern crate alloc`
-appears only under `#[cfg(test)]`. `tc_digest` has no dependencies; `tc_md` and
-`tc_sha` depend on `tc_digest` and `tc_zeroize`. CI enforces each crate's
+`no_std` and needs no allocator. The only Cargo feature is `tc_ascon_hash`'s
+`legacy`, off by default, which adds the pre-standard Ascon digests and no
+dependency; CI runs every job with and without `--all-features`. `extern crate
+alloc` appears only under `#[cfg(test)]`. `tc_digest` has no dependencies; the
+digest crates depend on `tc_digest` and `tc_zeroize`. CI enforces each crate's
 dependency set with `cargo tree` on the `wasm32-unknown-unknown`,
 `aarch64-unknown-none` and x86 targets. `tc_digest` carries no algorithm
 knowledge: output lengths, block sizes, output-buffer checks and timing
@@ -37,8 +39,9 @@ has no name method and does not require `Display`, just as `BlockCipher` and
 Each `Display` implementation writes a fixed name without inspecting the
 digest state, and its `fmt` documents its timing like any other helper.
 
-Every digest in `tc_sha` and MD4 and MD5 in `tc_md` are constant time; MD2 is
-variable time because it indexes its S-box with message-derived bytes.
+Every digest in `tc_ascon_hash`, `tc_keccak` and `tc_sha` and MD4 and MD5 in
+`tc_md` are constant time; MD2 is variable time because it indexes its S-box
+with message-derived bytes.
 `tests/documentation.rs` in each digest crate requires every `*Digest` type,
 `pub`/`pub(crate)` function and compression helper to say which, and the
 scanned file list there must grow with the crate. Keep the timing contract of
