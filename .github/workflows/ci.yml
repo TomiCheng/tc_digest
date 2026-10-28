@@ -53,6 +53,7 @@ jobs:
         with:
           key: ${{ matrix.name }}
       - run: cargo test --locked
+      - run: cargo test --locked --all-features
 
   x86:
     name: Native execution / Linux i686
@@ -69,6 +70,7 @@ jobs:
       - run: rustup target add i686-unknown-linux-gnu
       - uses: Swatinem/rust-cache@v2
       - run: cargo test --locked --target i686-unknown-linux-gnu
+      - run: cargo test --locked --all-features --target i686-unknown-linux-gnu
 
   msrv:
     name: MSRV / Rust 1.85.0
@@ -80,10 +82,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         env:
           RUSTUP_TOOLCHAIN: 1.85.0
-      # No crate has a feature, and the only dependency outside the workspace
-      # is tc_zeroize, which requires 1.85 as well, so Rust 1.85 covers every
-      # build, tests included.
+      # The only feature, tc_ascon_hash's legacy, adds no dependency, and the
+      # only dependency outside the workspace is tc_zeroize, which requires 1.85
+      # as well, so Rust 1.85 covers every build, tests included.
       - run: cargo +1.85.0 test --locked
+      - run: cargo +1.85.0 test --locked --all-features
 
   quality:
     name: Format, Clippy, docs and package
@@ -104,10 +107,11 @@ jobs:
         with:
           key: build-only
       - run: cargo clippy --locked --all-targets -- -D warnings
-      - run: cargo doc --locked --no-deps
-      # Packaged together so tc_keccak, tc_md and tc_sha are verified against
-      # this tc_digest, not the release on crates.io.
-      - run: cargo package --locked -p tc_digest -p tc_keccak -p tc_md -p tc_sha
+      - run: cargo clippy --locked --all-targets --all-features -- -D warnings
+      - run: cargo doc --locked --no-deps --all-features
+      # Packaged together so the digest crates are verified against this
+      # tc_digest, not the release on crates.io.
+      - run: cargo package --locked -p tc_ascon_hash -p tc_digest -p tc_keccak -p tc_md -p tc_sha
         env:
           # Keep unpacked package manifests outside rust-cache's build tree.
           CARGO_TARGET_DIR: ${{ runner.temp }}/package
@@ -124,6 +128,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo check --locked --target wasm32-unknown-unknown
       - run: cargo check --locked --target aarch64-unknown-none
+      - run: cargo check --locked --all-features --target wasm32-unknown-unknown
+      - run: cargo check --locked --all-features --target aarch64-unknown-none
       - name: Check default dependency sets
         run: |
           check() {
@@ -135,8 +141,11 @@ jobs:
             fi
           }
           # No crate has a target-specific dependency, so the x86 targets must
-          # resolve the same sets as the portable ones.
+          # resolve the same sets as the portable ones. The legacy feature must
+          # not add a dependency.
           for target in aarch64-unknown-none wasm32-unknown-unknown x86_64-unknown-linux-gnu i686-unknown-linux-gnu; do
+            check 'tc_ascon_hash tc_digest tc_zeroize' -p tc_ascon_hash --target "$target"
+            check 'tc_ascon_hash tc_digest tc_zeroize' -p tc_ascon_hash --all-features --target "$target"
             check 'tc_digest' -p tc_digest --target "$target"
             check 'tc_digest tc_keccak tc_zeroize' -p tc_keccak --target "$target"
             check 'tc_digest tc_md tc_zeroize' -p tc_md --target "$target"
