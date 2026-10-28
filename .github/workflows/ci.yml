@@ -82,9 +82,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         env:
           RUSTUP_TOOLCHAIN: 1.85.0
-      # The only feature, tc_ascon_hash's legacy, adds no dependency, and the
-      # only dependency outside the workspace is tc_zeroize, which requires 1.85
-      # as well, so Rust 1.85 covers every build, tests included.
+      # The first-party dependencies require 1.85, and the only third-party
+      # ones, the blake3 crate and its dependencies behind tc_blake's blake3
+      # feature, build on 1.85, so Rust 1.85 covers every build, tests included.
       - run: cargo +1.85.0 test --locked
       - run: cargo +1.85.0 test --locked --all-features
 
@@ -111,7 +111,7 @@ jobs:
       - run: cargo doc --locked --no-deps --all-features
       # Packaged together so the digest crates are verified against this
       # tc_digest, not the release on crates.io.
-      - run: cargo package --locked -p tc_ascon_hash -p tc_digest -p tc_keccak -p tc_md -p tc_sha
+      - run: cargo package --locked -p tc_ascon_hash -p tc_blake -p tc_digest -p tc_keccak -p tc_md -p tc_sha
         env:
           # Keep unpacked package manifests outside rust-cache's build tree.
           CARGO_TARGET_DIR: ${{ runner.temp }}/package
@@ -129,7 +129,10 @@ jobs:
       - run: cargo check --locked --target wasm32-unknown-unknown
       - run: cargo check --locked --target aarch64-unknown-none
       - run: cargo check --locked --all-features --target wasm32-unknown-unknown
-      - run: cargo check --locked --all-features --target aarch64-unknown-none
+      # tc_blake's blake3 feature builds the blake3 crate's NEON C code on
+      # aarch64, which needs a C cross compiler for this bare-metal target;
+      # its default build is checked above.
+      - run: cargo check --locked --all-features --target aarch64-unknown-none --workspace --exclude tc_blake
       - name: Check default dependency sets
         run: |
           check() {
@@ -140,12 +143,25 @@ jobs:
               exit 1
             fi
           }
-          # No crate has a target-specific dependency, so the x86 targets must
-          # resolve the same sets as the portable ones. The legacy feature must
-          # not add a dependency.
+          # Only tc_blake has a target-specific dependency, tc_runtime on x86,
+          # and its blake3 feature adds the blake3 crate and its dependencies;
+          # every other crate resolves the same set on every target, and the
+          # legacy feature must not add a dependency.
           for target in aarch64-unknown-none wasm32-unknown-unknown x86_64-unknown-linux-gnu i686-unknown-linux-gnu; do
+            case "$target" in
+              x86_64-*|i686-*)
+                blake='tc_blake tc_digest tc_runtime tc_zeroize'
+                blake3='arrayvec blake3 cfg-if constant_time_eq cpufeatures tc_blake tc_digest tc_runtime tc_zeroize zeroize'
+                ;;
+              *)
+                blake='tc_blake tc_digest tc_zeroize'
+                blake3='arrayvec blake3 cfg-if constant_time_eq tc_blake tc_digest tc_zeroize zeroize'
+                ;;
+            esac
             check 'tc_ascon_hash tc_digest tc_zeroize' -p tc_ascon_hash --target "$target"
             check 'tc_ascon_hash tc_digest tc_zeroize' -p tc_ascon_hash --all-features --target "$target"
+            check "$blake" -p tc_blake --target "$target"
+            check "$blake3" -p tc_blake --all-features --target "$target"
             check 'tc_digest' -p tc_digest --target "$target"
             check 'tc_digest tc_keccak tc_zeroize' -p tc_keccak --target "$target"
             check 'tc_digest tc_md tc_zeroize' -p tc_md --target "$target"
