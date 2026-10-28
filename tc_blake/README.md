@@ -159,6 +159,9 @@ cargo bench -p tc_blake --bench blake3 --features blake3
 Criterion is the only dev-dependency. Its 0.7 line is used because 0.8 needs
 Rust 1.86, and the tests, which build dev-dependencies, run on Rust 1.85.
 
+Figures from one machine, comparing the vector and the portable code and the
+two BLAKE3 backends, are in [BENCHES.md](BENCHES.md).
+
 ## License
 
 Licensed under either the [MIT license](LICENSE-MIT) or the
