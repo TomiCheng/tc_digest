@@ -1,0 +1,17 @@
+[package]
+name = "tc_dstu7564"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "DSTU 7564:2014 (Kupyna) message digest, the Ukrainian national hash standard."
+readme = "README.md"
+documentation = "https://docs.rs/tc_dstu7564"
+keywords = ["dstu7564", "kupyna", "hash", "digest", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[dependencies]
+tc_digest = { version = "0.1.0", path = "../tc_digest" }
+tc_zeroize = "0.1.0"
