@@ -32,8 +32,9 @@ BLAKE3 on the third-party `blake3` crate. CI runs every job with and without `--
 needs a cross compiler there. `extern crate alloc` appears only under
 `#[cfg(test)]`, and under `tc_digest`'s `alloc` feature. `tc_digest` has no
 dependencies without that feature; the digest crates depend on
-`tc_digest` and `tc_zeroize`, and `tc_blake` also on `tc_runtime` on x86 and,
-with its feature, on `blake3` and `zeroize`. `tc_blake` is the only crate with
+`tc_digest` and `tc_zeroize`, `tc_gost3411` also on `tc_gost28147` and its
+`tc_block_cipher` traits for GOST R 34.11-94's cipher, and `tc_blake` also on
+`tc_runtime` on x86 and, with its feature, on `blake3` and `zeroize`. `tc_blake` is the only crate with
 `unsafe` code, its x86 BLAKE2 vector compression behind `tc_runtime` detection
 tokens; it denies `unsafe_code` and allows it only there. CI enforces each crate's
 dependency set with `cargo tree` on the `wasm32-unknown-unknown`,
@@ -53,7 +54,8 @@ digest state, and its `fmt` documents its timing like any other helper.
 
 Every digest in `tc_ascon_hash`, `tc_blake`, `tc_keccak` and `tc_sha` and MD4
 and MD5 in `tc_md` are constant time; MD2 is variable time because it indexes its S-box
-with message-derived bytes.
+with message-derived bytes, and every `tc_gost3411` digest is variable time
+because GOST 28147-89 and Streebog index S-boxes and tables with secret bytes.
 `tests/documentation.rs` in each digest crate requires every `*Digest` type,
 `pub`/`pub(crate)` function and compression helper to say which, and the
 scanned file list there must grow with the crate. Keep the timing contract of
@@ -74,8 +76,8 @@ Merkle–Damgård block buffer. The copies must stay byte-for-byte identical, an
 CI compares them; change both together.
 
 Rust 1.85 is guaranteed for every build in the workspace, tests included,
-because the first-party dependencies outside the workspace, `tc_zeroize` and
-`tc_runtime`, require 1.85 as well, the only third-party ones, the `blake3`
+because the first-party dependencies outside the workspace, `tc_zeroize`,
+`tc_runtime`, `tc_block_cipher` and `tc_gost28147`, require 1.85 as well, the only third-party ones, the `blake3`
 crate and its dependencies behind `tc_blake`'s feature, build on 1.85, and
 the only third-party dev-dependency, `tc_blake`'s Criterion for its
 benchmarks, is held at 0.7 because 0.8 needs Rust 1.86. The MSRV job
@@ -117,9 +119,9 @@ Documentation is part of the contract: crates use `#![deny(missing_docs)]`,
 doctests carry the executable examples, and CI runs `cargo doc` with
 `RUSTDOCFLAGS: -D warnings`. An additive public API change belongs in the
 crate README's contract lists — "Traits" in `tc_digest/README.md`, "Types" in
-`tc_md/README.md` and `tc_sha/README.md` — and in the changelog, not only in
-the code. Known-answer vectors cite their source: an RFC, FIPS 180-4, or
-digests computed by OpenSSL.
+`tc_md/README.md`, `tc_sha/README.md` and `tc_gost3411/README.md` — and in the
+changelog, not only in the code. Known-answer vectors cite their source: an
+RFC, FIPS 180-4, digests computed by OpenSSL, or Bouncy Castle's own tests.
 
 Work happens on `feat/*` branches off `develop`; pull requests target `develop`,
 which merges to `main`. Commit messages use an imperative subject and a wrapped

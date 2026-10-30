@@ -1,0 +1,19 @@
+[package]
+name = "tc_gost3411"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "GOST R 34.11-94 and GOST R 34.11-2012 (Streebog) message digests."
+readme = "README.md"
+documentation = "https://docs.rs/tc_gost3411"
+keywords = ["gost", "streebog", "gost3411", "hash", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[dependencies]
+tc_block_cipher = "0.1.0"
+tc_digest = { version = "0.1.0", path = "../tc_digest" }
+tc_gost28147 = "0.1.0"
+tc_zeroize = "0.1.0"
