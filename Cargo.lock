@@ -597,6 +597,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "tc_sm3"
+version = "0.1.0"
+dependencies = [
+ "tc_digest",
+ "tc_zeroize",
+]
+
+[[package]]
 name = "tc_zeroize"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
