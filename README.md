@@ -3,7 +3,8 @@
 A Rust workspace for message digests. It holds `tc_digest`, the shared traits
 through which a digest or an extendable-output function absorbs a message and
 writes its output, and the digest crates built on it: `tc_ascon_hash`,
-`tc_blake`, `tc_gost3411`, `tc_keccak`, `tc_md`, `tc_sha` and `tc_sm3`.
+`tc_blake`, `tc_gost3411`, `tc_keccak`, `tc_md`, `tc_ripemd`, `tc_sha` and
+`tc_sm3`.
 Each crate is published separately and keeps its own README, changelog, and
 validation commands.
 
@@ -21,6 +22,7 @@ validation commands.
 | [`tc_gost3411`](tc_gost3411) | [![crates.io](https://img.shields.io/crates/v/tc_gost3411.svg)](https://crates.io/crates/tc_gost3411) [![docs.rs](https://docs.rs/tc_gost3411/badge.svg)](https://docs.rs/tc_gost3411) | GOST R 34.11-94 (RFC 5831), with the CryptoPro or a caller-supplied S-box, and GOST R 34.11-2012, Streebog-256 and Streebog-512 (RFC 6986). Every digest is variable time and wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest`, `tc_gost28147`, `tc_block_cipher` and `tc_zeroize`. |
 | [`tc_keccak`](tc_keccak) | [![crates.io](https://img.shields.io/crates/v/tc_keccak.svg)](https://crates.io/crates/tc_keccak) [![docs.rs](https://docs.rs/tc_keccak/badge.svg)](https://docs.rs/tc_keccak) | Keccak, SHA3-224 to SHA3-512, SHAKE128 and SHAKE256 (FIPS 202), and cSHAKE, TupleHash and ParallelHash (NIST SP 800-185). Every digest is constant time and wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
 | [`tc_md`](tc_md) | [![crates.io](https://img.shields.io/crates/v/tc_md.svg)](https://crates.io/crates/tc_md) [![docs.rs](https://docs.rs/tc_md/badge.svg)](https://docs.rs/tc_md) | MD2, MD4 and MD5 for legacy interoperability. MD4 and MD5 are constant time; MD2 is variable time. Every digest wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
+| [`tc_ripemd`](tc_ripemd) | [![crates.io](https://img.shields.io/crates/v/tc_ripemd.svg)](https://crates.io/crates/tc_ripemd) [![docs.rs](https://docs.rs/tc_ripemd/badge.svg)](https://docs.rs/tc_ripemd) | RIPEMD-128, RIPEMD-160, RIPEMD-256 and RIPEMD-320 (ISO/IEC 10118-3). Every digest is constant time and wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
 | [`tc_sha`](tc_sha) | [![crates.io](https://img.shields.io/crates/v/tc_sha.svg)](https://crates.io/crates/tc_sha) [![docs.rs](https://docs.rs/tc_sha/badge.svg)](https://docs.rs/tc_sha) | SHA-1, SHA-224, SHA-256, SHA-384, SHA-512 and SHA-512/t (FIPS 180-4). Every digest is constant time and wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
 | [`tc_sm3`](tc_sm3) | [![crates.io](https://img.shields.io/crates/v/tc_sm3.svg)](https://crates.io/crates/tc_sm3) [![docs.rs](https://docs.rs/tc_sm3/badge.svg)](https://docs.rs/tc_sm3) | SM3 (GB/T 32905-2016), the Chinese national hash standard. Constant time and wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
 

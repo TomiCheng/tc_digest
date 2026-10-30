@@ -52,7 +52,8 @@ has no name method and does not require `Display`, just as `BlockCipher` and
 Each `Display` implementation writes a fixed name without inspecting the
 digest state, and its `fmt` documents its timing like any other helper.
 
-Every digest in `tc_ascon_hash`, `tc_blake`, `tc_keccak`, `tc_sha` and `tc_sm3` and MD4
+Every digest in `tc_ascon_hash`, `tc_blake`, `tc_keccak`, `tc_ripemd`, `tc_sha` and
+`tc_sm3` and MD4
 and MD5 in `tc_md` are constant time; MD2 is variable time because it indexes its S-box
 with message-derived bytes, and every `tc_gost3411` digest is variable time
 because GOST 28147-89 and Streebog index S-boxes and tables with secret bytes.
@@ -71,7 +72,8 @@ README say so.
 
 Each digest's `do_final` asserts the output length before touching any state,
 so a short buffer panics and leaves the digest usable; keep that order.
-`tc_md`, `tc_sha` and `tc_sm3` each hold a private copy of `md_buffer.rs`, the shared
+`tc_md`, `tc_ripemd`, `tc_sha` and `tc_sm3` each hold a private copy of
+`md_buffer.rs`, the shared
 Merkle–Damgård block buffer. The copies must stay byte-for-byte identical, and
 CI compares them; change them together.
 
@@ -119,8 +121,8 @@ Documentation is part of the contract: crates use `#![deny(missing_docs)]`,
 doctests carry the executable examples, and CI runs `cargo doc` with
 `RUSTDOCFLAGS: -D warnings`. An additive public API change belongs in the
 crate README's contract lists — "Traits" in `tc_digest/README.md`, "Types" in
-`tc_md/README.md`, `tc_sha/README.md`, `tc_gost3411/README.md` and
-`tc_sm3/README.md` — and in the
+`tc_md/README.md`, `tc_ripemd/README.md`, `tc_sha/README.md`,
+`tc_gost3411/README.md` and `tc_sm3/README.md` — and in the
 changelog, not only in the code. Known-answer vectors cite their source: an
 RFC, FIPS 180-4, digests computed by OpenSSL, or Bouncy Castle's own tests.
 
