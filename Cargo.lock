@@ -591,6 +591,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "tc_misc_digest"
+version = "0.1.0"
+dependencies = [
+ "tc_digest",
+ "tc_runtime",
+ "tc_zeroize",
+]
+
+[[package]]
 name = "tc_ripemd"
 version = "0.1.0"
 dependencies = [
