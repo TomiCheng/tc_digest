@@ -4,7 +4,7 @@ A Rust workspace for message digests. It holds `tc_digest`, the shared traits
 through which a digest or an extendable-output function absorbs a message and
 writes its output, and the digest crates built on it: `tc_ascon_hash`,
 `tc_blake`, `tc_dstu7564`, `tc_gost3411`, `tc_keccak`, `tc_md`, `tc_ripemd`,
-`tc_sha` and `tc_sm3`.
+`tc_sha`, `tc_skein` and `tc_sm3`.
 Each crate is published separately and keeps its own README, changelog, and
 validation commands.
 
@@ -25,6 +25,7 @@ validation commands.
 | [`tc_md`](tc_md) | [![crates.io](https://img.shields.io/crates/v/tc_md.svg)](https://crates.io/crates/tc_md) [![docs.rs](https://docs.rs/tc_md/badge.svg)](https://docs.rs/tc_md) | MD2, MD4 and MD5 for legacy interoperability. MD4 and MD5 are constant time; MD2 is variable time. Every digest wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
 | [`tc_ripemd`](tc_ripemd) | [![crates.io](https://img.shields.io/crates/v/tc_ripemd.svg)](https://crates.io/crates/tc_ripemd) [![docs.rs](https://docs.rs/tc_ripemd/badge.svg)](https://docs.rs/tc_ripemd) | RIPEMD-128, RIPEMD-160, RIPEMD-256 and RIPEMD-320 (ISO/IEC 10118-3). Every digest is constant time and wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
 | [`tc_sha`](tc_sha) | [![crates.io](https://img.shields.io/crates/v/tc_sha.svg)](https://crates.io/crates/tc_sha) [![docs.rs](https://docs.rs/tc_sha/badge.svg)](https://docs.rs/tc_sha) | SHA-1, SHA-224, SHA-256, SHA-384, SHA-512 and SHA-512/t (FIPS 180-4). Every digest is constant time and wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
+| [`tc_skein`](tc_skein) | [![crates.io](https://img.shields.io/crates/v/tc_skein.svg)](https://crates.io/crates/tc_skein) [![docs.rs](https://docs.rs/tc_skein/badge.svg)](https://docs.rs/tc_skein) | Skein 1.3 with a 256-, 512- or 1024-bit state and any whole number of output bytes, optionally keyed as a MAC or personalised, with owned parameters under the `alloc` feature. Constant time and wipes its state on drop. `no_std`, no `unsafe`, and without the feature no allocator; depends on `tc_digest`, `tc_threefish`, `tc_block_cipher` and `tc_zeroize`. |
 | [`tc_sm3`](tc_sm3) | [![crates.io](https://img.shields.io/crates/v/tc_sm3.svg)](https://crates.io/crates/tc_sm3) [![docs.rs](https://docs.rs/tc_sm3/badge.svg)](https://docs.rs/tc_sm3) | SM3 (GB/T 32905-2016), the Chinese national hash standard. Constant time and wipes its state on drop. `no_std`, no allocator, no `unsafe`; depends on `tc_digest` and `tc_zeroize`. |
 
 `tc_digest` defines the contract and knows no algorithm; each digest crate
@@ -34,14 +35,16 @@ guarantees.
 ## Requirements
 
 Rust 1.85 or later, edition 2024. Every crate builds without `std` and
-without an allocator. Three crates have a Cargo feature, all off by default:
+without an allocator. Four crates have a Cargo feature, all off by default:
 `tc_digest`'s `alloc` adds the adapter digests, which need an allocator,
+`tc_skein`'s `alloc` adds `SkeinParamsOwned`, which needs one too,
 `tc_ascon_hash`'s `legacy` adds the pre-standard Ascon digests and no
 dependency, and `tc_blake`'s `blake3` runs BLAKE3 on the `blake3` crate.
 
 Rust 1.85 is the earliest compiler for edition 2024, and it is guaranteed for
 every crate in this workspace, tests included: the first-party dependencies,
-`tc_zeroize`, `tc_runtime`, `tc_block_cipher` and `tc_gost28147`, require
+`tc_zeroize`, `tc_runtime`, `tc_block_cipher`, `tc_gost28147` and
+`tc_threefish`, require
 Rust 1.85 as well, and the only
 third-party ones, the `blake3` crate and its dependencies behind `tc_blake`'s
 `blake3` feature, build on it, as does Criterion 0.7, `tc_blake`'s benchmark

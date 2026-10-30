@@ -23,17 +23,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The crate list and workspace-wide checks live in the root
 [README.md](README.md); read it rather than restating it here. Every crate is
-`no_std` and, by default, needs no allocator. Three crates have a Cargo
+`no_std` and, by default, needs no allocator. Four crates have a Cargo
 feature, all off by default: `tc_digest`'s `alloc` adds the adapter digests,
-which need an allocator and `tc_zeroize`; `tc_ascon_hash`'s `legacy` adds the
-pre-standard Ascon digests and no dependency; and `tc_blake`'s `blake3` runs
-BLAKE3 on the third-party `blake3` crate. CI runs every job with and without `--all-features`, except that the
+which need an allocator and `tc_zeroize`; `tc_skein`'s `alloc` adds
+`SkeinParamsOwned`, which owns its inputs and wipes them; `tc_ascon_hash`'s
+`legacy` adds the pre-standard Ascon digests and no dependency; and
+`tc_blake`'s `blake3` runs BLAKE3 on the third-party `blake3` crate. CI runs every job with and without `--all-features`, except that the
 `aarch64-unknown-none` check leaves out `tc_blake`'s feature, whose NEON C code
 needs a cross compiler there. `extern crate alloc` appears only under
-`#[cfg(test)]`, and under `tc_digest`'s `alloc` feature. `tc_digest` has no
+`#[cfg(test)]`, and under the `alloc` features of `tc_digest` and `tc_skein`. `tc_digest` has no
 dependencies without that feature; the digest crates depend on
 `tc_digest` and `tc_zeroize`, `tc_gost3411` also on `tc_gost28147` and its
-`tc_block_cipher` traits for GOST R 34.11-94's cipher, and `tc_blake` also on
+`tc_block_cipher` traits for GOST R 34.11-94's cipher, `tc_skein` also on
+`tc_threefish` and the same traits, and `tc_blake` also on
 `tc_runtime` on x86 and, with its feature, on `blake3` and `zeroize`. `tc_blake` is the only crate with
 `unsafe` code, its x86 BLAKE2 vector compression behind `tc_runtime` detection
 tokens; it denies `unsafe_code` and allows it only there. CI enforces each crate's
@@ -52,8 +54,8 @@ has no name method and does not require `Display`, just as `BlockCipher` and
 Each `Display` implementation writes a fixed name without inspecting the
 digest state, and its `fmt` documents its timing like any other helper.
 
-Every digest in `tc_ascon_hash`, `tc_blake`, `tc_keccak`, `tc_ripemd`, `tc_sha`
-and `tc_sm3`, and MD4 and MD5 in `tc_md`, are constant time. MD2 is variable
+Every digest in `tc_ascon_hash`, `tc_blake`, `tc_keccak`, `tc_ripemd`, `tc_sha`,
+`tc_skein` and `tc_sm3`, and MD4 and MD5 in `tc_md`, are constant time. MD2 is variable
 time because it indexes its S-box with message-derived bytes, and every
 `tc_gost3411` digest and `tc_dstu7564` are variable time because GOST 28147-89,
 Streebog and Kupyna index S-boxes and tables with secret bytes.
@@ -79,7 +81,7 @@ CI compares them; change them together.
 
 Rust 1.85 is guaranteed for every build in the workspace, tests included,
 because the first-party dependencies outside the workspace, `tc_zeroize`,
-`tc_runtime`, `tc_block_cipher` and `tc_gost28147`, require 1.85 as well, the only third-party ones, the `blake3`
+`tc_runtime`, `tc_block_cipher`, `tc_gost28147` and `tc_threefish`, require 1.85 as well, the only third-party ones, the `blake3`
 crate and its dependencies behind `tc_blake`'s feature, build on 1.85, and
 the only third-party dev-dependency, `tc_blake`'s Criterion for its
 benchmarks, is held at 0.7 because 0.8 needs Rust 1.86. The MSRV job
@@ -122,7 +124,8 @@ doctests carry the executable examples, and CI runs `cargo doc` with
 `RUSTDOCFLAGS: -D warnings`. An additive public API change belongs in the
 crate README's contract lists — "Traits" in `tc_digest/README.md`, "Types" in
 `tc_dstu7564/README.md`, `tc_md/README.md`, `tc_ripemd/README.md`,
-`tc_sha/README.md`, `tc_gost3411/README.md` and `tc_sm3/README.md` — and in the
+`tc_sha/README.md`, `tc_gost3411/README.md`, `tc_skein/README.md` and
+`tc_sm3/README.md` — and in the
 changelog, not only in the code. Known-answer vectors cite their source: an
 RFC, FIPS 180-4, digests computed by OpenSSL, or Bouncy Castle's own tests.
 
