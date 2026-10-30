@@ -1,0 +1,40 @@
+[package]
+name = "tc_misc_digest"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Less common message digests: Haraka, PHOTON-Beetle, ESCH, Tiger, Whirlpool and Xoodyak, one feature each."
+readme = "README.md"
+documentation = "https://docs.rs/tc_misc_digest"
+keywords = ["hash", "digest", "whirlpool", "tiger", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[features]
+default = []
+# Haraka-256/256 and Haraka-512/256, with AES-NI chosen at run time on x86.
+haraka = ["dep:tc_runtime"]
+# PHOTON-Beetle-Hash, a NIST lightweight cryptography finalist.
+photon-beetle = []
+# ESCH-256 and ESCH-384 on the SPARKLE permutations.
+sparkle = []
+# Tiger, the 192-bit digest of Anderson and Biham.
+tiger = []
+# Whirlpool (ISO/IEC 10118-3).
+whirlpool = []
+# Xoodyak Hash on the Xoodoo permutation.
+xoodyak = []
+
+[dependencies]
+tc_digest = { version = "0.1.0", path = "../tc_digest" }
+# Wipes the state and buffers on drop.
+tc_zeroize = "0.1.0"
+
+# Detects AES-NI on x86 without std, for Haraka.
+[target.'cfg(any(target_arch = "x86", target_arch = "x86_64"))'.dependencies]
+tc_runtime = { version = "0.1.0", optional = true }
+
+[package.metadata.docs.rs]
+all-features = true

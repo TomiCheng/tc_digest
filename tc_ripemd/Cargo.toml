@@ -1,0 +1,17 @@
+[package]
+name = "tc_ripemd"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "RIPEMD-128, RIPEMD-160, RIPEMD-256 and RIPEMD-320 message digests (ISO/IEC 10118-3)."
+readme = "README.md"
+documentation = "https://docs.rs/tc_ripemd"
+keywords = ["ripemd", "ripemd160", "hash", "digest", "no-std"]
+categories = ["cryptography", "no-std"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE-MIT", "LICENSE-APACHE"]
+
+[dependencies]
+tc_digest = { version = "0.1.0", path = "../tc_digest" }
+tc_zeroize = "0.1.0"
